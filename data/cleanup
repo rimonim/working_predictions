@@ -1,0 +1,91 @@
+library(tidyverse)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+d1 <- read.csv("Exp1.csv")
+d1$err <- 1 - d1$correct
+d1 <- d1 %>% filter(count_TrialProc != "NA") # remove practice
+
+d1 %>% group_by(jatosStudyResultId) %>% summarize(mean(correct))
+
+d1$condition[d1$cue == "A" & d1$target == "X"] <- "AX"
+d1$condition[d1$cue == "A" & d1$target == "Y"] <- "AY"
+d1$condition[d1$cue == "B" & d1$target == "X"] <- "BX"
+d1$condition[d1$cue == "B" & d1$target == "Y"] <- "BY"
+
+d1$p_global[d1$target == "X"] <- .68
+d1$p_global[d1$target == "Y"] <- .32
+
+d1$p_conditional[d1$condition == "AX"] <- .8
+d1$p_conditional[d1$condition == "AY"] <- .2
+d1$p_conditional[d1$condition == "BX"] <- .2
+d1$p_conditional[d1$condition == "BY"] <- .8
+
+d1 <- d1 %>% 
+  # remove funny cases
+  mutate(prevCorrect = lag(correct)) %>% 
+  filter(correct == 1) %>% 
+  filter(prevCorrect ==1) %>% 
+  filter(response_time > 100, response_time < 5000) %>% 
+  group_by(jatosStudyResultId, condition) %>% 
+  filter(abs(scale(response_time)) < 2) %>%
+  # user-friendliness
+  rename(ID = jatosStudyResultId,
+         probe = target,
+         RT = response_time) %>%
+  select(ID, condition, cue, probe, p_global, p_conditional, correct, RT, correct) %>%
+  ungroup()
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+# Experiment 1.2 Data Cleanup
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+d2 <- read.csv("Exp2.csv")
+d2$err <- 1 - d2$correct
+d2 <- d2 %>% filter(count_TrialProc != "NA") # remove practice
+
+d2 %>% group_by(jatosStudyResultId) %>% summarize(mean(correct))
+
+d2$condition[d2$cue == "A" & d2$target == "X"] <- "AX"
+d2$condition[d2$cue == "A" & d2$target == "Y"] <- "AY"
+d2$condition[d2$cue == "B" & d2$target == "X"] <- "BX"
+d2$condition[d2$cue == "B" & d2$target == "Y"] <- "BY"
+d2$condition[d2$cue == "C"] <- "CX"
+
+d2$p_global[d2$target == "X"] <- .8
+d2$p_global[d2$target == "Y"] <- .2
+
+d2$p_conditional[d2$condition == "AX"] <- .67
+d2$p_conditional[d2$condition == "AY"] <- .33
+d2$p_conditional[d2$condition == "BX"] <- .33
+d2$p_conditional[d2$condition == "BY"] <- .67
+d2$p_conditional[d2$condition == "CX"] <- 1
+
+d2 <- d2 %>% 
+  # remove funny cases
+  mutate(prevCorrect = lag(correct)) %>% 
+  filter(correct == 1) %>% 
+  filter(prevCorrect ==1) %>% 
+  filter(response_time > 100, response_time < 5000) %>% 
+  group_by(jatosStudyResultId, condition) %>% 
+  filter(abs(scale(response_time)) < 2) %>%
+  # user-friendliness
+  rename(ID = jatosStudyResultId,
+         probe = target,
+         RT = response_time) %>%
+  select(ID, condition, cue, probe, p_global, p_conditional, correct, RT) %>%
+  ungroup()
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+# One Data Set to Rule them All 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+d <- d1 %>% add_row(d2) %>%
+  mutate(p_posterior = p_global * p_conditional,
+         best_guess = round(p_conditional))
+
+# Aggregated by participant/condition
+d_agg <- d %>%
+  group_by(ID, condition, cue, probe, p_global, p_conditional, p_posterior, best_guess) %>%
+  summarise(RT = mean(RT),
+            correct = mean(correct))
