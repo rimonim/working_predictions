@@ -3,9 +3,12 @@ Human-made machines tend to be carefully designed and callibrated for particular
 
 I write "predict" in scare quotes because prediction is a cognitive concept, and an ill-defined one at that. As we shall see, much of conditionally-dependent behavior can be explained by simple association. 
 
-Experiment 1.1 looks like this:
+In our two pilot experiments, participants pressed one key if X appeared and another if Y. Two cues, A and B, had no direct relevance to the task, but could be used to predict whether X or Y was to follow.
+Experiment 1.1 looks like this, where at each level (left to right) the colored veins represent conditional probabilities of the next stimulus occuring:
+![Exp 1.1](figures/exp_1.1_vasculature.png)
 
 Experiment 1.2 looks like this:
+![Exp 1.2](figures/exp_1.2_vasculature.png)
 
 ### Competing Theories
 
