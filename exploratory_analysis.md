@@ -49,10 +49,6 @@ Coefficients:
 (Intercept)     495.27      12.65  39.137  < 2e-16 ***
 p_conditional   -93.66      20.43  -4.585 9.51e-06 ***
 
-Residual standard error: 70.49 on 150 degrees of freedom
-Multiple R-squared:  0.1229,	Adjusted R-squared:  0.1171 
-F-statistic: 21.02 on 1 and 150 DF,  p-value: 9.505e-06
-
 Call:
 lm(formula = RT ~ p_conditional, data = d1_agg)
 
@@ -61,10 +57,6 @@ Coefficients:
 (Intercept)     465.91      14.39  32.379   <2e-16 ***
 p_conditional   -56.06      24.68  -2.272   0.0262 *  
 
-Residual standard error: 62.82 on 70 degrees of freedom
-Multiple R-squared:  0.06867,	Adjusted R-squared:  0.05537 
-F-statistic: 5.162 on 1 and 70 DF,  p-value: 0.02617
-
 Call:
 lm(formula = RT ~ p_conditional, data = d2_agg)
 
@@ -72,10 +64,6 @@ Coefficients:
               Estimate Std. Error t value Pr(>|t|)    
 (Intercept)     542.76      21.36  25.416  < 2e-16 ***
 p_conditional  -156.97      32.83  -4.781 8.06e-06 ***
-
-Residual standard error: 73.77 on 78 degrees of freedom
-Multiple R-squared:  0.2267,	Adjusted R-squared:  0.2167 
-F-statistic: 22.86 on 1 and 78 DF,  p-value: 8.061e-06
 ```
 
 #### Model 1: Summed Parallel Predictions
@@ -95,10 +83,6 @@ Coefficients:
 p_global        -36.13      23.40  -1.544    0.125    
 p_conditional   -87.15      20.77  -4.196 4.64e-05 ***
 
-Residual standard error: 70.17 on 149 degrees of freedom
-Multiple R-squared:  0.1367,	Adjusted R-squared:  0.1251 
-F-statistic:  11.8 on 2 and 149 DF,  p-value: 1.749e-05
-
 Call:
 lm(formula = RT ~ p_global + p_conditional, data = d1_agg)
 
@@ -108,10 +92,6 @@ Coefficients:
 p_global        -46.54      41.05  -1.134   0.2607    
 p_conditional   -56.06      24.63  -2.277   0.0259 *  
 
-Residual standard error: 62.69 on 69 degrees of freedom
-Multiple R-squared:  0.08571,	Adjusted R-squared:  0.05921 
-F-statistic: 3.234 on 2 and 69 DF,  p-value: 0.04543
-
 Call:
 lm(formula = RT ~ p_global + p_conditional, data = d2_agg)
 
@@ -120,10 +100,6 @@ Coefficients:
 (Intercept)     550.30      23.58  23.338  < 2e-16 ***
 p_global        -22.72      29.75  -0.764    0.447    
 p_conditional  -148.33      34.81  -4.262 5.69e-05 ***
-
-Residual standard error: 73.97 on 77 degrees of freedom
-Multiple R-squared:  0.2325,	Adjusted R-squared:  0.2125 
-F-statistic: 11.66 on 2 and 77 DF,  p-value: 3.768e-05
 ```
 
 #### Model 2: Summed Proportional Stimulus-Response Associations
@@ -151,10 +127,6 @@ Coefficients:
 p_global      -18.15      24.53  -0.740    0.461    
 p_posterior  -119.69      28.01  -4.272 3.43e-05 ***
 
-Residual standard error: 70.04 on 149 degrees of freedom
-Multiple R-squared:  0.1401,	Adjusted R-squared:  0.1285 
-F-statistic: 12.13 on 2 and 149 DF,  p-value: 1.312e-05
-
 Call:
 lm(formula = RT ~ p_global + p_posterior, data = d1_agg)
 
@@ -164,10 +136,6 @@ Coefficients:
 p_global      -29.18      45.92  -0.635    0.527    
 p_posterior   -34.73      35.87  -0.968    0.336    
 
-Residual standard error: 64.56 on 69 degrees of freedom
-Multiple R-squared:  0.03022,	Adjusted R-squared:  0.002107 
-F-statistic: 1.075 on 2 and 69 DF,  p-value: 0.347
-
 Call:
 lm(formula = RT ~ p_global + p_posterior, data = d2_agg)
 
@@ -176,16 +144,42 @@ Coefficients:
 (Intercept)  494.188     17.164  28.791  < 2e-16 ***
 p_global      -2.612     29.480  -0.089     0.93    
 p_posterior -220.721     42.834  -5.153 1.92e-06 ***
-
-Residual standard error: 70.91 on 77 degrees of freedom
-Multiple R-squared:  0.2947,	Adjusted R-squared:  0.2764 
-F-statistic: 16.08 on 2 and 77 DF,  p-value: 1.455e-06
 ```
 
 #### Model 3: LTM = Base Rate, WM = Conditional Best Guess
 
+```r
+aggmod_3 <- lm(RT ~ p_global + best_guess, d_agg)
+```
+
 ##### Results
 ```r
+Call:
+lm(formula = RT ~ p_global + best_guess, data = d_agg)
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   489.53      14.66  33.389  < 2e-16 ***
+p_global      -47.47      23.59  -2.012  0.04604 *  
+best_guess    -37.61      11.79  -3.190  0.00173 ** 
+
+Call:
+lm(formula = RT ~ p_global + best_guess, data = d1_agg)
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   477.96      23.03  20.755   <2e-16 ***
+p_global      -46.54      41.05  -1.134   0.2607    
+best_guess    -33.64      14.78  -2.277   0.0259 *  
+
+Call:
+lm(formula = RT ~ p_global + best_guess, data = d1_agg)
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   477.96      23.03  20.755   <2e-16 ***
+p_global      -46.54      41.05  -1.134   0.2607    
+best_guess    -33.64      14.78  -2.277   0.0259 *  
 ```
 
 #### Model 4: LTM = Summed Proportional Associations, WM = Conditional Best Guess
