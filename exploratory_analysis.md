@@ -86,6 +86,44 @@ aggmod_1 <- lm(RT ~ p_global + p_conditional, d_agg)
 ```
 ##### Results
 ```r
+Call:
+lm(formula = RT ~ p_global + p_conditional, data = d_agg)
+
+Coefficients:
+              Estimate Std. Error t value Pr(>|t|)    
+(Intercept)     510.87      16.15  31.634  < 2e-16 ***
+p_global        -36.13      23.40  -1.544    0.125    
+p_conditional   -87.15      20.77  -4.196 4.64e-05 ***
+
+Residual standard error: 70.17 on 149 degrees of freedom
+Multiple R-squared:  0.1367,	Adjusted R-squared:  0.1251 
+F-statistic:  11.8 on 2 and 149 DF,  p-value: 1.749e-05
+
+Call:
+lm(formula = RT ~ p_global + p_conditional, data = d1_agg)
+
+Coefficients:
+              Estimate Std. Error t value Pr(>|t|)    
+(Intercept)     489.18      25.05  19.530   <2e-16 ***
+p_global        -46.54      41.05  -1.134   0.2607    
+p_conditional   -56.06      24.63  -2.277   0.0259 *  
+
+Residual standard error: 62.69 on 69 degrees of freedom
+Multiple R-squared:  0.08571,	Adjusted R-squared:  0.05921 
+F-statistic: 3.234 on 2 and 69 DF,  p-value: 0.04543
+
+Call:
+lm(formula = RT ~ p_global + p_conditional, data = d2_agg)
+
+Coefficients:
+              Estimate Std. Error t value Pr(>|t|)    
+(Intercept)     550.30      23.58  23.338  < 2e-16 ***
+p_global        -22.72      29.75  -0.764    0.447    
+p_conditional  -148.33      34.81  -4.262 5.69e-05 ***
+
+Residual standard error: 73.97 on 77 degrees of freedom
+Multiple R-squared:  0.2325,	Adjusted R-squared:  0.2125 
+F-statistic: 11.66 on 2 and 77 DF,  p-value: 3.768e-05
 ```
 
 #### Model 2: Summed Proportional Stimulus-Response Associations
