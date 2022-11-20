@@ -142,6 +142,44 @@ aggmod_2 <- lm(RT ~ p_global + p_posterior, d_agg)
 ```
 ##### Results
 ```r
+Call:
+lm(formula = RT ~ p_global + p_posterior, data = d_agg)
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   479.93      13.51  35.534  < 2e-16 ***
+p_global      -18.15      24.53  -0.740    0.461    
+p_posterior  -119.69      28.01  -4.272 3.43e-05 ***
+
+Residual standard error: 70.04 on 149 degrees of freedom
+Multiple R-squared:  0.1401,	Adjusted R-squared:  0.1285 
+F-statistic: 12.13 on 2 and 149 DF,  p-value: 1.312e-05
+
+Call:
+lm(formula = RT ~ p_global + p_posterior, data = d1_agg)
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   461.15      22.46  20.528   <2e-16 ***
+p_global      -29.18      45.92  -0.635    0.527    
+p_posterior   -34.73      35.87  -0.968    0.336    
+
+Residual standard error: 64.56 on 69 degrees of freedom
+Multiple R-squared:  0.03022,	Adjusted R-squared:  0.002107 
+F-statistic: 1.075 on 2 and 69 DF,  p-value: 0.347
+
+Call:
+lm(formula = RT ~ p_global + p_posterior, data = d2_agg)
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  494.188     17.164  28.791  < 2e-16 ***
+p_global      -2.612     29.480  -0.089     0.93    
+p_posterior -220.721     42.834  -5.153 1.92e-06 ***
+
+Residual standard error: 70.91 on 77 degrees of freedom
+Multiple R-squared:  0.2947,	Adjusted R-squared:  0.2764 
+F-statistic: 16.08 on 2 and 77 DF,  p-value: 1.455e-06
 ```
 
 #### Model 3: LTM = Base Rate, WM = Conditional Best Guess
