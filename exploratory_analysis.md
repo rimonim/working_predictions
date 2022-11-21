@@ -46,6 +46,7 @@ The following models will be trained three times each: once on the data from exp
 10 166640 AY        A     Y       0.8     0.32           0.2          0  552        1
 # … with 142 more rows
 ```
+The initial hints at individual differences mean that multilevel modelling is appropriate here. But what should the parameters be?
 
 #### Model 0: Conditional Probability Only
 If participants fully understood the structure of the experiment, and behaved optimally, the resulting predictions would reflect cue-conditional probabilities. Thus if `A` appeared in experiment 1.1, the optimal prediction engine would evaluate the probability of `X` at .8 and of `Y` at .2. Likewise is `B` appeared, the engine would evaluate P(`X`|`B`) at .2 and P(`Y`|`B`) at .8. Thus reaction times would be equally short for the sequences `A`→ `X` and `B`→ `Y`, since P(`X`|`A`) = P(`Y`|`B`). Reaction times for `A`→ `Y` and `B`→ `X` would be longer, but likewise equal.
