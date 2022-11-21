@@ -67,7 +67,7 @@ p_conditional  -156.97      32.83  -4.781 8.06e-06 ***
 ```
 Looking alright. The coefficient for the effect of p_conditional does vary drastically between the two experiments. Looking at the visual, it seems clear that this can be attributed to the `C` condition in Experiment 1.2.
 
-![aggmod_01](figures/aggmod_0.png)
+![aggmod_0](figures/aggmod_0.png)
 
 While the `C` condition in Experiment 1.2 has by far the lowest RTs, the other two conditions in that experiment seems hardly different. They also seem quite a bit higher than the model expects them to be. 
 
@@ -79,6 +79,11 @@ Maybe conditional probability is not the whole story. Context-clues in the real 
 ```r
 aggmod_1 <- lm(RT ~ p_global + p_conditional, d_agg)
 ```
+
+This model seems to add very little to the last one. `p_global` has a small effect, if any. `p_conditional` = 0.33 and `p_conditional` = 0.67 again look to have higher RTs than the model expects. Interestingly enough, the `p_conditional` = 0.67 in the high p_global group seems to be higher than `p_conditional` = 0.33! Remember than this is the `A`→ `X` condition in Experiment 1.2.
+
+![aggmod_1](figures/aggmod_1.png)
+
 ##### Results
 ```r
 Call:
