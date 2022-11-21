@@ -52,33 +52,45 @@ The initial hints at individual differences mean that multilevel modelling is ap
 If participants fully understood the structure of the experiment, and behaved optimally, the resulting predictions would reflect cue-conditional probabilities. Thus if `A` appeared in experiment 1.1, the optimal prediction engine would evaluate the probability of `X` at .8 and of `Y` at .2. Likewise is `B` appeared, the engine would evaluate P(`X`|`B`) at .2 and P(`Y`|`B`) at .8. Thus reaction times would be equally short for the sequences `A`→ `X` and `B`→ `Y`, since P(`X`|`A`) = P(`Y`|`B`). Reaction times for `A`→ `Y` and `B`→ `X` would be longer, but likewise equal.
 
 ```r
-aggmod_0 <- lm(RT ~ p_conditional, d_agg)
+aggmod_0 <- lmer(RT ~ 1 + p_conditional + (1 + p_conditional | ID), d_agg)
 ```
 ##### Results
 ```r
-Call:
-lm(formula = RT ~ p_conditional, data = d_agg)
+Formula: RT ~ 1 + p_conditional + (1 + p_conditional | ID)
+   Data: d_agg
 
-Coefficients:
-              Estimate Std. Error t value Pr(>|t|)    
-(Intercept)     495.27      12.65  39.137  < 2e-16 ***
-p_conditional   -93.66      20.43  -4.585 9.51e-06 ***
+Fixed effects:
+              Estimate Std. Error t value
+(Intercept)     498.40      11.26  44.273
+p_conditional   -99.83      14.29  -6.988
 
-Call:
-lm(formula = RT ~ p_conditional, data = d1_agg)
+Correlation of Fixed Effects:
+            (Intr)
+p_conditinl -0.466
 
-Coefficients:
-              Estimate Std. Error t value Pr(>|t|)    
-(Intercept)     465.91      14.39  32.379   <2e-16 ***
-p_conditional   -56.06      24.68  -2.272   0.0262 *  
+Formula: RT ~ 1 + p_conditional + (1 + p_conditional | ID)
+   Data: d1_agg
 
-Call:
-lm(formula = RT ~ p_conditional, data = d2_agg)
+Fixed effects:
+              Estimate Std. Error t value
+(Intercept)     465.91      13.34  34.933
+p_conditional   -56.06      12.55  -4.469
 
-Coefficients:
-              Estimate Std. Error t value Pr(>|t|)    
-(Intercept)     542.76      21.36  25.416  < 2e-16 ***
-p_conditional  -156.97      32.83  -4.781 8.06e-06 ***
+Correlation of Fixed Effects:
+            (Intr)
+p_conditinl -0.200
+
+Formula: RT ~ 1 + p_conditional + (1 + p_conditional | ID)
+   Data: d2_agg
+
+Fixed effects:
+              Estimate Std. Error t value
+(Intercept)     542.76      14.27  38.048
+p_conditional  -156.97      22.71  -6.913
+
+Correlation of Fixed Effects:
+            (Intr)
+p_conditinl -0.357
 ```
 Looking alright. The coefficient for the effect of p_conditional does vary drastically between the two experiments. Looking at the visual, it seems clear that this can be attributed to the `C` condition in Experiment 1.2.
 
@@ -92,37 +104,55 @@ Worst of all, a few of these groups look to be clustered. Especially the two Exp
 Maybe conditional probability is not the whole story. Context-clues in the real world often come at many levels of temporal and conceptual abstraction. Perhaps participants are generating one assessment of outcome probability based on the task as a whole (`p_global`) and another on the cues alone (`p_conditional`).
 
 ```r
-aggmod_1 <- lm(RT ~ p_global + p_conditional, d_agg)
+aggmod_1 <- lmer(RT ~ 1 + p_global + p_conditional + (1 + p_global + p_conditional | ID), d_agg)
 ```
 
 ##### Results
 ```r
-Call:
-lm(formula = RT ~ p_global + p_conditional, data = d_agg)
+Formula: 
+RT ~ 1 + p_global + p_conditional + (1 + p_global + p_conditional | ID)
+   Data: d_agg
 
-Coefficients:
-              Estimate Std. Error t value Pr(>|t|)    
-(Intercept)     510.87      16.15  31.634  < 2e-16 ***
-p_global        -36.13      23.40  -1.544    0.125    
-p_conditional   -87.15      20.77  -4.196 4.64e-05 ***
+Fixed effects:
+              Estimate Std. Error t value
+(Intercept)     515.37      12.73  40.488
+p_global        -38.39      13.51  -2.843
+p_conditional   -94.07      14.17  -6.639
 
-Call:
-lm(formula = RT ~ p_global + p_conditional, data = d1_agg)
+Correlation of Fixed Effects:
+            (Intr) p_glbl
+p_global    -0.508       
+p_conditinl -0.214 -0.290
 
-Coefficients:
-              Estimate Std. Error t value Pr(>|t|)    
-(Intercept)     489.18      25.05  19.530   <2e-16 ***
-p_global        -46.54      41.05  -1.134   0.2607    
-p_conditional   -56.06      24.63  -2.277   0.0259 *  
+Formula: 
+RT ~ 1 + p_global + p_conditional + (1 + p_global + p_conditional | ID)
+   Data: d1_agg
 
-Call:
-lm(formula = RT ~ p_global + p_conditional, data = d2_agg)
+Fixed effects:
+              Estimate Std. Error t value
+(Intercept)     489.18      19.51  25.068
+p_global        -46.54      23.74  -1.960
+p_conditional   -56.06      12.13  -4.623
 
-Coefficients:
-              Estimate Std. Error t value Pr(>|t|)    
-(Intercept)     550.30      23.58  23.338  < 2e-16 ***
-p_global        -22.72      29.75  -0.764    0.447    
-p_conditional  -148.33      34.81  -4.262 5.69e-05 ***
+Correlation of Fixed Effects:
+            (Intr) p_glbl
+p_global    -0.748       
+p_conditinl  0.245 -0.596
+
+Formula: 
+RT ~ 1 + p_global + p_conditional + (1 + p_global + p_conditional | ID)
+   Data: d2_agg
+
+Fixed effects:
+              Estimate Std. Error t value
+(Intercept)     550.30      15.61  35.251
+p_global        -22.72      16.94  -1.341
+p_conditional  -148.33      23.92  -6.201
+
+Correlation of Fixed Effects:
+            (Intr) p_glbl
+p_global    -0.422       
+p_conditinl -0.161 -0.339
 ```
 This model seems to add very little to the last one. `p_global` has a small effect, if any. `p_conditional` = 0.33 and `p_conditional` = 0.67 again look to have higher RTs than the model expects. Interestingly enough, the `p_conditional` = 0.67 in the high p_global group seems to be higher than `p_conditional` = 0.33! Remember than this is the `A`→ `X` condition in Experiment 1.2.
 
@@ -140,37 +170,52 @@ d_agg <- d_agg %>% mutate(p_posterior = p_cue*p_conditional)
 Model 2 can therefore be formulated as follows:
 
 ```r
-aggmod_2 <- lm(RT ~ p_global + p_posterior, d_agg)
+aggmod_2 <- lmer(RT ~ 1 + p_global + p_posterior + (1 + p_global + p_posterior | ID), d_agg)
 ```
 
 ##### Results
 ```r
-Call:
-lm(formula = RT ~ p_global + p_posterior, data = d_agg)
+Formula: RT ~ 1 + p_global + p_posterior + (1 + p_global + p_posterior |  ID)
+   Data: d_agg
 
-Coefficients:
-            Estimate Std. Error t value Pr(>|t|)    
-(Intercept)   479.93      13.51  35.534  < 2e-16 ***
-p_global      -18.15      24.53  -0.740    0.461    
-p_posterior  -119.69      28.01  -4.272 3.43e-05 ***
+Fixed effects:
+            Estimate Std. Error t value
+(Intercept)   476.91      13.14  36.290
+p_global      -14.82      14.43  -1.027
+p_posterior  -121.72      22.21  -5.481
 
-Call:
-lm(formula = RT ~ p_global + p_posterior, data = d1_agg)
+Correlation of Fixed Effects:
+            (Intr) p_glbl
+p_global    -0.651       
+p_posterior  0.067 -0.361
 
-Coefficients:
-            Estimate Std. Error t value Pr(>|t|)    
-(Intercept)   461.15      22.46  20.528   <2e-16 ***
-p_global      -29.18      45.92  -0.635    0.527    
-p_posterior   -34.73      35.87  -0.968    0.336    
+Formula: RT ~ 1 + p_global + p_posterior + (1 + p_global + p_posterior |      ID)
+   Data: d1_agg
 
-Call:
-lm(formula = RT ~ p_global + p_posterior, data = d2_agg)
+Fixed effects:
+            Estimate Std. Error t value
+(Intercept)   461.15      22.02  20.938
+p_global      -29.18      26.55  -1.099
+p_posterior   -34.73      18.48  -1.880
 
-Coefficients:
-            Estimate Std. Error t value Pr(>|t|)    
-(Intercept)  494.188     17.164  28.791  < 2e-16 ***
-p_global      -2.612     29.480  -0.089     0.93    
-p_posterior -220.721     42.834  -5.153 1.92e-06 ***
+Correlation of Fixed Effects:
+            (Intr) p_glbl
+p_global    -0.794       
+p_posterior  0.056 -0.376
+
+Formula: RT ~ 1 + p_global + p_posterior + (1 + p_global + p_posterior |      ID)
+   Data: d2_agg
+
+Fixed effects:
+            Estimate Std. Error t value
+(Intercept)  494.188     16.516  29.921
+p_global      -2.612     17.523  -0.149
+p_posterior -220.721     32.618  -6.767
+
+Correlation of Fixed Effects:
+            (Intr) p_glbl
+p_global    -0.659       
+p_posterior  0.517 -0.463
 ```
 
 This model seems to have accentuated the differences between the two Experiments: `p_posterior` is an incredible predictor in Experiment 1.2, but underwhelming in Exp. 1.1. `p_global` is once again weak, though always in the right direction.
