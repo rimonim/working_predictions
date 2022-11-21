@@ -10,6 +10,12 @@ Experiment 1.1 looks like this, where at each level (left to right) the colored 
 Experiment 1.2 looks like this:
 ![Exp 1.2](figures/exp_1.2_vasculature.png)
 
+Let's get an initial look at the data. I'm interested to see how consistent patterns are across participants.
+![Exp 1.1](figures/Exp1.1.png)
+
+![Exp 1.2](figures/Exp1.2.png)
+
+
 ### Model Comparisons
 #### The Dataset
 The following models will be trained three times each: once on the data from experiment 1.1, once on the data from experiment 1.2, and once on a unified dataset. All datasets are aggregated by participant means within each condition.
@@ -249,6 +255,9 @@ Coefficients:
 p_global      -51.61      30.58  -1.687   0.0956 .  
 best_guess    -44.34      18.35  -2.416   0.0181 *  
 ```
+Finally, the coefficients look similar in all three model fits! Even visually, 
+
+![aggmod_3](figures/aggmod_3.png)
 
 #### Model 4: LTM = Summed Proportional Associations, WM = Conditional Best Guess
 
