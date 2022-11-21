@@ -162,6 +162,8 @@ This model seems to have accentuated the differences between the two Experiments
 
 At this point, let's stop and do a few formal model comparisons.
 ```r
+library(flexplot)
+
 model.comparison(aggmod_0, aggmod_1)
 #>                aic      bic bayes.factor     p   rsq
 #> aggmod_0 1729.027 1738.099        3.689 0.125 0.123
@@ -252,6 +254,35 @@ best_guess    -33.64      14.78  -2.277   0.0259 *
 
 ##### Results
 ```r
+Call:
+lm(formula = RT ~ p_global + p_posterior + best_guess, data = d_agg)
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   484.79      14.40  33.672  < 2e-16 ***
+p_global      -21.15      24.73  -0.856  0.39363    
+p_posterior  -100.26      34.37  -2.917  0.00409 ** 
+best_guess    -13.77      14.11  -0.976  0.33063    
+
+Call:
+lm(formula = RT ~ p_global + p_posterior + best_guess, data = d1_agg)
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   484.36      24.23  19.991   <2e-16 ***
+p_global      -67.88      47.95  -1.415   0.1615    
+p_posterior    42.67      49.34   0.865   0.3903    
+best_guess    -46.44      20.94  -2.218   0.0299 *  
+
+Call:
+lm(formula = RT ~ p_global + p_posterior + best_guess, data = d1_agg)
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   484.36      24.23  19.991   <2e-16 ***
+p_global      -67.88      47.95  -1.415   0.1615    
+p_posterior    42.67      49.34   0.865   0.3903    
+best_guess    -46.44      20.94  -2.218   0.0299 *  
 ```
 
 #### Model 5: LTM = Summed Proportional Associations, WM = Conditional Load Threshold
