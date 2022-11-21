@@ -7,11 +7,11 @@ In our two pilot experiments, participants pressed one key if `X` appeared and a
 Experiment 1.1 looks like this, where at each level (left to right) the colored veins represent conditional probabilities of the next stimulus occuring:
 ![Exp 1.1](figures/exp_1.1_vasculature.png)
 
-Experiment 1.2 looks like this:
-![Exp 1.2](figures/exp_1.2_vasculature.png)
-
 Let's get an initial look at the data. I'm interested to see how consistent patterns are across participants.
 ![Exp 1.1](figures/Exp1.1.png)
+
+Experiment 1.2 looks like this:
+![Exp 1.2](figures/exp_1.2_vasculature.png)
 
 ![Exp 1.2](figures/Exp1.2.png)
 
