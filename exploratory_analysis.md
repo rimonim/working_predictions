@@ -241,13 +241,13 @@ p_global      -46.54      41.05  -1.134   0.2607
 best_guess    -33.64      14.78  -2.277   0.0259 *  
 
 Call:
-lm(formula = RT ~ p_global + best_guess, data = d1_agg)
+lm(formula = RT ~ p_global + best_guess, data = d2_agg)
 
 Coefficients:
             Estimate Std. Error t value Pr(>|t|)    
-(Intercept)   477.96      23.03  20.755   <2e-16 ***
-p_global      -46.54      41.05  -1.134   0.2607    
-best_guess    -33.64      14.78  -2.277   0.0259 *  
+(Intercept)   504.08      20.74  24.301   <2e-16 ***
+p_global      -51.61      30.58  -1.687   0.0956 .  
+best_guess    -44.34      18.35  -2.416   0.0181 *  
 ```
 
 #### Model 4: LTM = Summed Proportional Associations, WM = Conditional Best Guess
@@ -275,14 +275,14 @@ p_posterior    42.67      49.34   0.865   0.3903
 best_guess    -46.44      20.94  -2.218   0.0299 *  
 
 Call:
-lm(formula = RT ~ p_global + p_posterior + best_guess, data = d1_agg)
+lm(formula = RT ~ p_global + p_posterior + best_guess, data = d2_agg)
 
 Coefficients:
-            Estimate Std. Error t value Pr(>|t|)    
-(Intercept)   484.36      24.23  19.991   <2e-16 ***
-p_global      -67.88      47.95  -1.415   0.1615    
-p_posterior    42.67      49.34   0.865   0.3903    
-best_guess    -46.44      20.94  -2.218   0.0299 *  
+              Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  494.15684   18.81275  26.267  < 2e-16 ***
+p_global      -2.60319   29.74007  -0.088    0.930    
+p_posterior -220.83212   50.65546  -4.359 4.04e-05 ***
+best_guess     0.08147   19.40974   0.004    0.997    
 ```
 
 #### Model 5: LTM = Summed Proportional Associations, WM = Conditional Load Threshold
