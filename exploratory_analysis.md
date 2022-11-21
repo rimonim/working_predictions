@@ -197,3 +197,4 @@ Ness and Meltzer-Asscher (2021)
 ```r
 ```
 
+- Surprise: Negative Log-Probability of Outcome?
