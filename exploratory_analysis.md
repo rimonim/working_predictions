@@ -65,6 +65,11 @@ Coefficients:
 (Intercept)     542.76      21.36  25.416  < 2e-16 ***
 p_conditional  -156.97      32.83  -4.781 8.06e-06 ***
 ```
+Looking alright. The coefficient for the effect of p_conditional does vary drastically between the two experiments. Looking at the visual, it seems clear that this can be attributed to the `C` condition in Experiment 1.2.
+
+![aggmod_01](figures/aggmod_0.png)
+
+
 
 #### Model 1: Summed Parallel Predictions
 Maybe conditional probability is not the whole story. Context-clues in the real world often come at many levels of temporal and conceptual abstraction. For exmaple, 
