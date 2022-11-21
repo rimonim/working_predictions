@@ -225,54 +225,54 @@ At this point, let's stop and do a few formal model comparisons.
 library(flexplot)
 
 model.comparison(aggmod_0, aggmod_1)
-#>                aic      bic bayes.factor     p   rsq
-#> aggmod_0 1729.027 1738.099        3.689 0.125 0.123
-#> aggmod_1 1728.614 1740.710        0.271       0.137
+#>               aic      bic bayes.factor     p
+#> aggmod_0 1633.919 1652.063        5.761 0.046
+#> aggmod_1 1625.326 1655.565        0.174      
 
 model.comparison(aggmod_0, aggmod_2)
-#>               aic      bic bayes.factor   rsq
-#> aggmod_0 1729.027 1738.099        2.751 0.123
-#> aggmod_2 1728.027 1740.123        0.364 0.140
+#>               aic      bic bayes.factor
+#> aggmod_0 1633.919 1652.063        1.846
+#> aggmod_2 1623.050 1653.289        0.542
 
 model.comparison(aggmod_1, aggmod_2)
-#>               aic      bic bayes.factor   rsq
-#> aggmod_1 1728.614 1740.710        0.746 0.137
-#> aggmod_2 1728.027 1740.123        1.341 0.140
+#>               aic      bic bayes.factor
+#> aggmod_1 1625.326 1655.565        0.320
+#> aggmod_2 1623.050 1653.289        3.121
 
 
 model.comparison(aggmod_0.1, aggmod_1.1)
-#>                aic     bic bayes.factor     p   rsq
-#> aggmod_0.1 804.494 811.324        4.365 0.261 0.069
-#> aggmod_1.1 805.165 814.271        0.229       0.086
+#>                aic     bic bayes.factor      p
+#> aggmod_0.1 741.188 754.848        0.003 <2e-16
+#> aggmod_1.1 720.127 742.894      394.354   
 
 model.comparison(aggmod_0.1, aggmod_2.1)
-#>                aic     bic bayes.factor   rsq
-#> aggmod_0.1 804.494 811.324       36.415 0.069
-#> aggmod_2.1 809.408 818.514        0.027 0.030
+#>                aic     bic bayes.factor
+#> aggmod_0.1 741.188 754.848     2989.857
+#> aggmod_2.1 748.087 770.854        0.000
 
 model.comparison(aggmod_1.1, aggmod_2.1)
-#>                aic     bic bayes.factor   rsq
-#> aggmod_1.1 805.165 814.271        8.343 0.086
-#> aggmod_2.1 809.408 818.514        0.120 0.030
+#>                aic     bic bayes.factor
+#> aggmod_1.1 720.127 742.894      1179063
+#> aggmod_2.1 748.087 770.854            0
 
 
 model.comparison(aggmod_0.2, aggmod_1.2)
-#>                aic     bic bayes.factor     p   rsq
-#> aggmod_0.2 919.166 926.312        6.614 0.447 0.227
-#> aggmod_1.2 920.562 930.090        0.151       0.232
+#>                aic     bic bayes.factor     p
+#> aggmod_0.2 859.817 874.109       54.335 0.718
+#> aggmod_1.2 858.279 882.099        0.018      
 
 model.comparison(aggmod_0.2, aggmod_2.2)
-#>                aic     bic bayes.factor   rsq
-#> aggmod_0.2 919.166 926.312        0.225 0.227
-#> aggmod_2.2 913.801 923.329        4.444 0.295
+#>                aic     bic bayes.factor
+#> aggmod_0.2 859.817 874.109            0
+#> aggmod_2.2 819.678 843.498      4435544
 
 model.comparison(aggmod_1.2, aggmod_2.2)
-#>                aic     bic bayes.factor   rsq
-#> aggmod_1.2 920.562 930.090        0.034 0.232
-#> aggmod_2.2 913.801 923.329       29.391 0.295
+#>                aic     bic bayes.factor
+#> aggmod_1.2 858.279 882.099            0
+#> aggmod_2.2 819.678 843.498    241004557
 ```
 
-Model 0 is best for Experiment 1.1, and Model 2 is best for Experiment 1.2. Model 1 is better than Model 2 for Experiment 1.1. None of the models are particularly good overall.
+Model 1 is best for Experiment 1.1, and Model 2 is best for Experiment 1.2. None of the models are particularly good overall.
 
 #### Model 3: LTM = Base Rate, WM = Conditional Best Guess
 
