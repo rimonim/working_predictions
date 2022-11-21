@@ -74,15 +74,11 @@ While the `C` condition in Experiment 1.2 has by far the lowest RTs, the other t
 Worst of all, a few of these groups look to be clustered. Especially the two Experiment 1 groups seem to be split along the y axis. Remember that `p_conditional` = 0.2 contains both `A`→ `Y` and `B`→ `X`, and `p_conditional` = 0.8 contains both `A`→ `X` and `B`→ `Y`.
 
 #### Model 1: Summed Parallel Predictions
-Maybe conditional probability is not the whole story. Context-clues in the real world often come at many levels of temporal and conceptual abstraction. For exmaple, 
+Maybe conditional probability is not the whole story. Context-clues in the real world often come at many levels of temporal and conceptual abstraction. Perhaps participants are generating one assessment of outcome probability based on the task as a whole (`p_global`) and another on the cues alone (`p_conditional`).
 
 ```r
 aggmod_1 <- lm(RT ~ p_global + p_conditional, d_agg)
 ```
-
-This model seems to add very little to the last one. `p_global` has a small effect, if any. `p_conditional` = 0.33 and `p_conditional` = 0.67 again look to have higher RTs than the model expects. Interestingly enough, the `p_conditional` = 0.67 in the high p_global group seems to be higher than `p_conditional` = 0.33! Remember than this is the `A`→ `X` condition in Experiment 1.2.
-
-![aggmod_1](figures/aggmod_1.png)
 
 ##### Results
 ```r
@@ -113,6 +109,9 @@ Coefficients:
 p_global        -22.72      29.75  -0.764    0.447    
 p_conditional  -148.33      34.81  -4.262 5.69e-05 ***
 ```
+This model seems to add very little to the last one. `p_global` has a small effect, if any. `p_conditional` = 0.33 and `p_conditional` = 0.67 again look to have higher RTs than the model expects. Interestingly enough, the `p_conditional` = 0.67 in the high p_global group seems to be higher than `p_conditional` = 0.33! Remember than this is the `A`→ `X` condition in Experiment 1.2.
+
+![aggmod_1](figures/aggmod_1.png)
 
 #### Model 2: Summed Proportional Stimulus-Response Associations
 Perhaps prediction is not prediction at all but rather simply the sum of stimulus-response associations. This view produces a model similar to Model 1 but subtly different.
@@ -128,6 +127,7 @@ Model 2 can therefore be formulated as follows:
 ```r
 aggmod_2 <- lm(RT ~ p_global + p_posterior, d_agg)
 ```
+
 ##### Results
 ```r
 Call:
@@ -157,6 +157,60 @@ Coefficients:
 p_global      -2.612     29.480  -0.089     0.93    
 p_posterior -220.721     42.834  -5.153 1.92e-06 ***
 ```
+
+This model seems to have accentuated the differences between the two Experiments: `p_posterior` is an incredible predictor in Experiment 1.2, but underwhelming in Exp. 1.1. `p_global` is once again weak, though always in the right direction.
+
+At this point, let's stop and do a few formal model comparisons.
+```r
+model.comparison(aggmod_0, aggmod_1)
+#>                aic      bic bayes.factor     p   rsq
+#> aggmod_0 1729.027 1738.099        3.689 0.125 0.123
+#> aggmod_1 1728.614 1740.710        0.271       0.137
+
+model.comparison(aggmod_0, aggmod_2)
+#>               aic      bic bayes.factor   rsq
+#> aggmod_0 1729.027 1738.099        2.751 0.123
+#> aggmod_2 1728.027 1740.123        0.364 0.140
+
+model.comparison(aggmod_1, aggmod_2)
+#>               aic      bic bayes.factor   rsq
+#> aggmod_1 1728.614 1740.710        0.746 0.137
+#> aggmod_2 1728.027 1740.123        1.341 0.140
+
+
+model.comparison(aggmod_0.1, aggmod_1.1)
+#>                aic     bic bayes.factor     p   rsq
+#> aggmod_0.1 804.494 811.324        4.365 0.261 0.069
+#> aggmod_1.1 805.165 814.271        0.229       0.086
+
+model.comparison(aggmod_0.1, aggmod_2.1)
+#>                aic     bic bayes.factor   rsq
+#> aggmod_0.1 804.494 811.324       36.415 0.069
+#> aggmod_2.1 809.408 818.514        0.027 0.030
+
+model.comparison(aggmod_1.1, aggmod_2.1)
+#>                aic     bic bayes.factor   rsq
+#> aggmod_1.1 805.165 814.271        8.343 0.086
+#> aggmod_2.1 809.408 818.514        0.120 0.030
+
+
+model.comparison(aggmod_0.2, aggmod_1.2)
+#>                aic     bic bayes.factor     p   rsq
+#> aggmod_0.2 919.166 926.312        6.614 0.447 0.227
+#> aggmod_1.2 920.562 930.090        0.151       0.232
+
+model.comparison(aggmod_0.2, aggmod_2.2)
+#>                aic     bic bayes.factor   rsq
+#> aggmod_0.2 919.166 926.312        0.225 0.227
+#> aggmod_2.2 913.801 923.329        4.444 0.295
+
+model.comparison(aggmod_1.2, aggmod_2.2)
+#>                aic     bic bayes.factor   rsq
+#> aggmod_1.2 920.562 930.090        0.034 0.232
+#> aggmod_2.2 913.801 923.329       29.391 0.295
+```
+
+Model 0 is best for Experiment 1.1, and Model 2 is best for Experiment 1.2. Model 1 is better than Model 2 for Experiment 1.1. None of the models are particularly good overall.
 
 #### Model 3: LTM = Base Rate, WM = Conditional Best Guess
 
