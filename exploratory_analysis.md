@@ -10,11 +10,19 @@ Experiment 1.1 looks like this, where at each level (left to right) the colored 
 Let's get an initial look at the data. I'm interested to see how consistent patterns are across participants.
 ![Exp 1.1](figures/Exp1.1.png)
 
+Some initial subjective observations:
+- There are clear individual differences in intercept (i.e. participants with fast RTs in one condition tend to have fast RTs across the board). This is not surprising.
+- Almost all participants were faster for `A`→ `X` than for `A`→ `Y`. Most were also faster for `B`→ `Y` than for `B`→ `X`. This shows a clear effect of cue-conditional probability. Nevertheless, the fact that the `B` conditions showed less consistency in this pattern suggests that global probability of probes (or less practice with the `B` cue) may play a role. 
+
 Experiment 1.2 looks like this:
 ![Exp 1.2](figures/exp_1.2_vasculature.png)
 
 ![Exp 1.2](figures/Exp1.2.png)
 
+Some initial subjective observations:
+- I see no clear pattern of differences between `A`→ `X` and `A`→ `Y` (even though the initial analysis did show that `A`→ `Y` was significantly longer). Some participants were faster on one, some on the other, and some barely different. I likewise see no clear pattern of differences between `B`→ `X` and`B`→ `Y`. 
+- It does, however, look to me like participants who's times go up from `A`→ `X` to `A`→ `Y` also go up from `B`→ `X` to `B`→ `Y`, and vice versa. The magnitude of those differences also looks to vary by participant. Also, it looks a bit like participants who are faster on `Y`s relative to `X`s in the first four conditions also tend to be slower on `C` → `X`. In other words, it looks like there are individual differences in the extent to which people rely on cues or prompts for their predictions. 
+- I see a difference in *variance* between the `A` conditions and the `B` conditions. This may be a fluke. I don't have an explanation for why this might be.
 
 ### Model Comparisons
 #### The Dataset
