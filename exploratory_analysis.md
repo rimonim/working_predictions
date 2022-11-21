@@ -69,7 +69,9 @@ Looking alright. The coefficient for the effect of p_conditional does vary drast
 
 ![aggmod_01](figures/aggmod_0.png)
 
+While the `C` condition in Experiment 1.2 has by far the lowest RTs, the other two conditions in that experiment seems hardly different. They also seem quite a bit higher than the model expects them to be. 
 
+Worst of all, a few of these groups look to be clustered. Especially the two Experiment 1 groups seem to be split along the y axis. Remember that `p_conditional` = 0.2 contains both `A`→ `Y` and `B`→ `X`, and `p_conditional` = 0.8 contains both `A`→ `X` and `B`→ `Y`.
 
 #### Model 1: Summed Parallel Predictions
 Maybe conditional probability is not the whole story. Context-clues in the real world often come at many levels of temporal and conceptual abstraction. For exmaple, 
