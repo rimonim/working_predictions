@@ -10,7 +10,7 @@ Experiment 1.1 looks like this, where at each level (left to right) the colored 
 Experiment 1.2 looks like this:
 ![Exp 1.2](figures/exp_1.2_vasculature.png)
 
-### Competing Theories
+### Model Comparisons
 #### The Dataset
 The following models will be trained three times each: once on the data from experiment 1.1, once on the data from experiment 1.2, and once on a unified dataset. All datasets are aggregated by participant means within each condition.
 
