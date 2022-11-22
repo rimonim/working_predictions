@@ -21,8 +21,22 @@ Experiment 1.2 looks like this:
 
 Some initial subjective observations:
 - I see no clear pattern of differences between `A`→ `X` and `A`→ `Y` (even though the initial analysis did show that `A`→ `Y` was significantly longer). Some participants were faster on one, some on the other, and some barely different. I likewise see no clear pattern of differences between `B`→ `X` and`B`→ `Y`. 
-- It does, however, look to me like participants who's times go up from `A`→ `X` to `A`→ `Y` also go up from `B`→ `X` to `B`→ `Y`, and vice versa. The magnitude of those differences also looks to vary by participant. Also, it looks a bit like participants who are faster on `Y`s relative to `X`s in the first four conditions also tend to be slower on `C` → `X`. In other words, it looks like there are individual differences in the extent to which people rely on cues or prompts for their predictions. 
-- I see a difference in *variance* between the `A` conditions and the `B` conditions. This may be a fluke. I don't have an explanation for why this might be.
+- It does, however, look to me like participants who's times go up from `A`→ `X` to `A`→ `Y` also go up from `B`→ `X` to `B`→ `Y`, and vice versa. The magnitude of those differences also looks to vary by participant. Also, it looks a bit like participants who are faster on `Y`s relative to `X`s in the first four conditions also tend to be slower on `C` → `X`. In other words, it looks like there are individual differences in the extent to which people rely on cues or prompts for their predictions. Are my eyes decieving me? Let's look at some quick and dirty correlations.
+```r
+d2_agg %>%
+  pivot_wider(id_cols = ID, names_from = condition, names_prefix = "RT_", values_from = RT) %>%
+  mutate(AXtoAY_diff = RT_AX - RT_AY,
+         BXtoBY_diff = RT_BX - RT_BY,
+         ABXtoCX_diff = mean(c(RT_AX, RT_BX)) - RT_CX) %>%
+  ungroup() %>%
+  select(AXtoAY_diff:ABXtoCX_diff) %>%
+  cor() %>%
+  ggcorrplot(lab = T, type = "upper", title = "Experiment 1.2 Within-Participant Correlations")
+```
+![Exp 1.2 Correlation Matrix](figures/exp1.2corrplot.png)
+Sure enough! This looks like strong initial evidence for individual differences in the extent to which participants are reliant on global (i.e. non-cue dependent) predictions. 
+
+Is this pattern also in the experiment 1.1 results? Maybe. There, AXtoAY_diff and BXtoBY_diff are correlated at 0.205 - small, but still positive.
 
 ### Model Comparisons
 #### The Dataset
