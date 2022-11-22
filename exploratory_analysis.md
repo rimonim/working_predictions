@@ -35,7 +35,7 @@ d2_agg %>%
 ```
 ![Exp 1.2 Correlation Matrix](figures/exp1.2corrplot.png)
 
-Sure enough! This looks like strong initial evidence for individual differences in the extent to which participants are reliant on global (i.e. non-cue dependent) predictions. 
+Sure enough! This looks like initial evidence for individual differences in the extent to which participants are reliant on global (i.e. non-cue dependent) predictions. 
 
 Is this pattern also in the experiment 1.1 results? Maybe. There, `AXtoAY_diff` and `BXtoBY_diff` are correlated at 0.205 - small, but still positive.
 
@@ -48,6 +48,10 @@ The last two groups, for which Y is quicker after the A cue (or always), are the
 Here's the plot of Exp 1.2 results again, with those five participants highlighted.
 
 ![Exp 1.2](figures/Exp1.2_2.png)
+
+The green one is what I expected here: slow all around, with little effect of condition at all. But the others are the fastest of the bunch! Not only that - they're especially fast on CX! This is very strange.
+
+In the absence of a clear direction to go from here, I'll start trying some models.
 
 ### Model Comparisons
 #### The Dataset
