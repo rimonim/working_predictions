@@ -34,6 +34,7 @@ d2_agg %>%
   ggcorrplot(lab = T, type = "upper", title = "Experiment 1.2 Within-Participant Correlations")
 ```
 ![Exp 1.2 Correlation Matrix](figures/exp1.2corrplot.png)
+
 Sure enough! This looks like strong initial evidence for individual differences in the extent to which participants are reliant on global (i.e. non-cue dependent) predictions. 
 
 Is this pattern also in the experiment 1.1 results? Maybe. There, AXtoAY_diff and BXtoBY_diff are correlated at 0.205 - small, but still positive.
