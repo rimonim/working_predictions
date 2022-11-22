@@ -37,7 +37,17 @@ d2_agg %>%
 
 Sure enough! This looks like strong initial evidence for individual differences in the extent to which participants are reliant on global (i.e. non-cue dependent) predictions. 
 
-Is this pattern also in the experiment 1.1 results? Maybe. There, AXtoAY_diff and BXtoBY_diff are correlated at 0.205 - small, but still positive.
+Is this pattern also in the experiment 1.1 results? Maybe. There, `AXtoAY_diff` and `BXtoBY_diff` are correlated at 0.205 - small, but still positive.
+
+Before I continue, I'd like to take a closer look at the correlation between `AXtoAY_diff` and `BXtoBY_diff` in experiment 1.2. 
+
+![Scatterplot of Differences Between X and Y RTs](figures/xydifferences_scatterplot.png)
+
+The "X is always quicker" group must be relying primarily on task-global probabilities of the prompts, which strongly favor X (X appears 80% of the time across conditions). The "X is quicker after A only" group is presumably more able to account for conditional probabilities, which favor X after A (67%) but not after B (33%). Unsurprisingly, this is the biggest group. 
+The last two groups, for which Y is quicker after the A cue (or always), are the most strange to me. Maybe these are people with low sensitivity to any predictive cues who ended up there by random chance?
+Here's the plot of Exp 1.2 results again, with those five participants highlighted.
+
+![Exp 1.2](figures/Exp1.2_2.png)
 
 ### Model Comparisons
 #### The Dataset
