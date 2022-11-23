@@ -304,10 +304,12 @@ model.comparison(aggmod_1.2, aggmod_2.2)
 Model 1 is best for Experiment 1.1, and Model 2 is best for Experiment 1.2. None of the models are particularly good overall.
 
 #### Model 3: LTM = Base Rate, WM = Conditional Best Guess
-Maybe difference levels of conditionally-dependent prediction are driven by different memory systems? So maybe
+Maybe difference levels of conditionally-dependent prediction are driven by different memory systems? If conditional probability were handled by working memory, its representation might be binary: either the prediction is being held in WM or not. If this is the case, perhaps, we just pick the most likely outcome and hold that in mind at each step. 
+
+If long term memory holds only global probabilities, the model would then look like this:
 
 ```r
-aggmod_3 <- lm(RT ~ p_global + best_guess, d_agg)
+aggmod_3 <- lmer(1 + p_global + best_guess + (1 + p_global + best_guess | ID), d_agg)
 ```
 
 ##### Results
@@ -383,8 +385,11 @@ Indeed, it looks like `best_guess` isn't doing anything except making the mixed-
 
 #### Model 4: LTM = Summed Proportional Associations, WM = Conditional Load Threshold
 
-Ness and Meltzer-Asscher (2021) 
-"At every stage during sentence processing, multiple representations in long-term memory are pre-activated. Many different factors contribute to the activation level of a word: the context, lexical properties of the word (e.g., frequency), idiosyncratic influences, and random noise. Once the activation level of a certain word reaches a retrieval threshold, this word is regarded as retrieved, which initiates its integration into the sentence's representation being built in WM." 
+So far we've seen that conditional probability is a really strong predictor of the Experiment 1 results, while Experiment 2 results are much more closely tied to `p_posterior` (i.e. cue probability times cue-conditional probability). What could account for this difference between the two experiments?
+
+Ness and Meltzer-Asscher (2021) propose the following model for linguistic processing: "At every stage during sentence processing, multiple representations in long-term memory are pre-activated. Many different factors contribute to the activation level of a word: the context, lexical properties of the word (e.g., frequency), idiosyncratic influences, and random noise. Once the activation level of a certain word reaches a retrieval threshold, this word is regarded as retrieved, which initiates its integration into the sentence's representation being built in WM." 
+
+
 
 ##### Results
 ```r
