@@ -391,8 +391,25 @@ Ness and Meltzer-Asscher (2021) propose the following model for linguistic proce
 
 In short, Ness and Meltzer-Asscher posit a LTM mechanism similar to the one formulated here in Model 2. In addition, though, they propose that when one prediction reaches a certain level of LTM activation (the threshold), it is updated into WM and recieves a boost. 
 
+A slight modification of this model might account for our data nicely: Perhaps the threshold for WM pre-updating is based on a more top-down predictive process (one that closely approximates `p_conditional`), such that the model could be formulated as follows (with the thresholded boost modeled as a steep logistic function):
+
+```r
+aggmod_4 <- nlme::nlme(RT ~ b0 + b1*p_global + b2*p_posterior + b3*plogis(500*(p_conditional + brk)),
+                    data = d_agg,
+                    fixed = b0 + b1 + b2 + b3 + brk ~ 1,
+                    random = b0 + brk ~ 1,
+                    groups = ~ ID,
+                    start = coef(naive_mod_4))
+```
+
+For the sake of simplicity, I'm starting by letting only the Intercept and the threshold vary by participant.
+
+Placing the threshold in conditional probability is not as crazy as it may sound - late ERP positivity effects such as the P600 provide some evidence that the brain can incur additional neural consequences when it encounters words that violate highly constraining contexts, over and above those reflected by the N400 ([Kuperberg & Jaeger, 2016]([https://www.google.com](https://www.tandfonline.com/doi/pdf/10.1080/23273798.2015.1102299?needAccess=true)).[Kuperberg (2007)]([[https://www.google.com](https://www.tandfonline.com/doi/pdf/10.1080/23273798.2015.1102299?needAccess=true](https://reader.elsevier.com/reader/sd/pii/S0006899306036821?token=DBAD6CA0B990F7C4A3F867A445220DF83A72944AE05923A161B970FEAF6E897559A6C8A2B35EF0427BE056A371F3850B&originRegion=eu-west-1&originCreation=20221123114908)) goes so far as to propose two distinct streams in 
+
+
 ##### Results
 ```r
+
 ```
 
 - Surprise: Negative Log-Probability of Outcome?
