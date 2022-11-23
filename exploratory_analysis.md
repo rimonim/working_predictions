@@ -440,13 +440,13 @@ brk  0.084 -0.222  0.342  0.010
 
 The model doesn't seem to want the threshold to vary at all. Also, p_posterior has essentially no effect. Let's get a better sense of what this function looks like.
 
-![aggmod_3](figures/aggmod_3_p_conditional.png)
+![aggmod_4](figures/aggmod_4_p_conditional.png)
 
 Ahh. It wants to put the Experiment 1.1 `A`→ `X` and `B`→ `Y` conditions right in the middle of the sigmoid curve. That feels like cheating to me.
 The above figure doesn't account for the real-life relationships between global, posterior, and conditional probabilities. Let's take a look at fitted values for the true data. 
 
-![aggmod_3](figures/aggmod_3_fitted_p_conditional.png)
-![aggmod_3](figures/aggmod_3_fitted_p_global.png)
+![aggmod_4](figures/aggmod_4_fitted_p_conditional.png)
+![aggmod_4](figures/aggmod_4_fitted_p_global.png)
 
 This looks really good, actually.
 
@@ -463,7 +463,7 @@ aggmod_5 <- nlme::nlme(RT ~ b0 + b1*p_global + b2*plogis(100*(p_conditional + br
 aggmod_5
 
 #> Nonlinear mixed-effects model fit by maximum likelihood
-#>   Model: RT ~ b0 + b1 * p_global + b2 * plogis(100 * (p_conditional +      brk)) 
+#>   Model: RT ~ b0 + b1 * p_global + b2 * plogis(100 * (p_conditional + brk)) 
 #>   Data: d_agg 
 #>   Log-likelihood: -781.3611
 #>   Fixed: b0 + b1 + b2 + brk ~ 1 
@@ -484,24 +484,25 @@ aggmod_5
 #> Number of Groups: 34 
 ```
 
-Sure enough, the model has the effect of `p_global` varying quite a lot between participants. This is important, because it explains the correlation I observed early in this analysis - that participants who's times go up more from `A`→ `X` to `A`→ `Y` also go up more from `B`→ `X` to `B`→ `Y`. I'm less sure what, if anything, to do with individual differences in the size of the WM boost.
+Sure enough, the model has the effect of `p_global` varying quite a lot between participants. This is important, because it explains the correlation I observed early in this analysis - that participants who's times go up more from `A`→`X` to `A`→`Y` also go up more from `B`→`X` to `B`→`Y`. I'm less sure what, if anything, to do with individual differences in the size of the WM boost.
 
 Time for another round of formal model comparisons. flexplot's model.comparison can't deal with nonlinear mixed effects models, so I'll content myself with AIC and BIC. 
 
 ###### AIC
-Model 1 (df = 10): 1625.326
-Model 2 (df = 10): 1623.05
-Model 3 (df = 10): 1652.397
-Model 4 (df = 9 ): 1612.108
-Model 5 (df = 11): 1584.722
+- Model 1 (df = 10): 1625.326
+- Model 2 (df = 10): 1623.05
+- Model 3 (df = 10): 1652.397
+- Model 4 (df = 9 ): 1612.108
+- Model 5 (df = 11): 1584.722
 
 ###### BIC
-Model 1 (df = 10): 1655.565
-Model 2 (df = 10): 1653.289
-Model 3 (df = 10): 1639.323
-Model 4 (df = 9 ): 1639.323
-Model 5 (df = 11): 1617.985
+- Model 1 (df = 10): 1655.565
+- Model 2 (df = 10): 1653.289
+- Model 3 (df = 10): 1639.323
+- Model 4 (df = 9 ): 1639.323
+- Model 5 (df = 11): 1617.985
 
-Model 5 does look best for the full dataset! I do still have two concerns about this model, though:
-1. 
+Model 5 does look best for the full dataset! I do still have a couple concerns about this model, though:
+1. Putting the `p_conditional` = .8 group in the middle of the sigmoid curve is suspicious. The model wants to do this because the effect of `p_global` can't come close to explaining the difference in RT between the `A`→`X`/`B`→`Y` conditions of Experiment 1.1 and the `C`→`X` condition in Experiment 1.2.
+2. If the universal WM updating threshold were right around p_conditional = .8, I would expect the variance in RT at that point to be especially high relative to p_conditional = 1, at which everybody should be pre-updating all the time. In fact, we see the opposite. This is strange.
 
