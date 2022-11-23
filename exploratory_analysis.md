@@ -204,7 +204,7 @@ aggmod_2 <- lmer(RT ~ 1 + p_global + p_posterior + (1 + p_global + p_posterior |
 
 ##### Results
 ```r
-Formula: RT ~ 1 + p_global + p_posterior + (1 + p_global + p_posterior |  ID)
+Formula: RT ~ 1 + p_global + p_posterior + (1 + p_global + p_posterior | ID)
    Data: d_agg
 
 Fixed effects:
@@ -218,7 +218,7 @@ Correlation of Fixed Effects:
 p_global    -0.651       
 p_posterior  0.067 -0.361
 
-Formula: RT ~ 1 + p_global + p_posterior + (1 + p_global + p_posterior |      ID)
+Formula: RT ~ 1 + p_global + p_posterior + (1 + p_global + p_posterior | ID)
    Data: d1_agg
 
 Fixed effects:
@@ -232,7 +232,7 @@ Correlation of Fixed Effects:
 p_global    -0.794       
 p_posterior  0.056 -0.376
 
-Formula: RT ~ 1 + p_global + p_posterior + (1 + p_global + p_posterior |      ID)
+Formula: RT ~ 1 + p_global + p_posterior + (1 + p_global + p_posterior | ID)
    Data: d2_agg
 
 Fixed effects:
@@ -304,6 +304,7 @@ model.comparison(aggmod_1.2, aggmod_2.2)
 Model 1 is best for Experiment 1.1, and Model 2 is best for Experiment 1.2. None of the models are particularly good overall.
 
 #### Model 3: LTM = Base Rate, WM = Conditional Best Guess
+Maybe difference levels of conditionally-dependent prediction are driven by different memory systems? So maybe
 
 ```r
 aggmod_3 <- lm(RT ~ p_global + best_guess, d_agg)
@@ -311,32 +312,47 @@ aggmod_3 <- lm(RT ~ p_global + best_guess, d_agg)
 
 ##### Results
 ```r
-Call:
-lm(formula = RT ~ p_global + best_guess, data = d_agg)
+Formula: RT ~ 1 + p_global + best_guess + (1 + p_global + best_guess | ID)
+   Data: d_agg
 
-Coefficients:
-            Estimate Std. Error t value Pr(>|t|)    
-(Intercept)   489.53      14.66  33.389  < 2e-16 ***
-p_global      -47.47      23.59  -2.012  0.04604 *  
-best_guess    -37.61      11.79  -3.190  0.00173 ** 
+Fixed effects:
+            Estimate Std. Error t value
+(Intercept)  491.018     13.076  37.550
+p_global     -50.450     14.659  -3.442
+best_guess   -39.016      7.512  -5.194
 
-Call:
-lm(formula = RT ~ p_global + best_guess, data = d1_agg)
+Correlation of Fixed Effects:
+           (Intr) p_glbl
+p_global   -0.629       
+best_guess -0.058 -0.127
 
-Coefficients:
-            Estimate Std. Error t value Pr(>|t|)    
-(Intercept)   477.96      23.03  20.755   <2e-16 ***
-p_global      -46.54      41.05  -1.134   0.2607    
-best_guess    -33.64      14.78  -2.277   0.0259 *  
+Formula: RT ~ 1 + p_global + best_guess + (1 + p_global + best_guess | ID)
+   Data: d1_agg
 
-Call:
-lm(formula = RT ~ p_global + best_guess, data = d2_agg)
+Fixed effects:
+            Estimate Std. Error t value
+(Intercept)  477.965     20.245  23.610
+p_global     -46.545     23.741  -1.961
+best_guess   -33.639      7.276  -4.623
 
-Coefficients:
-            Estimate Std. Error t value Pr(>|t|)    
-(Intercept)   504.08      20.74  24.301   <2e-16 ***
-p_global      -51.61      30.58  -1.687   0.0956 .  
-best_guess    -44.34      18.35  -2.416   0.0181 *  
+Correlation of Fixed Effects:
+           (Intr) p_glbl
+p_global   -0.793       
+best_guess  0.356 -0.596
+
+Formula: RT ~ 1 + p_global + best_guess + (1 + p_global + best_guess | ID)
+   Data: d2_agg
+
+Fixed effects:
+            Estimate Std. Error t value
+(Intercept)   504.08      18.73  26.908
+p_global      -51.61      20.82  -2.479
+best_guess    -44.34      12.90  -3.437
+
+Correlation of Fixed Effects:
+           (Intr) p_glbl
+p_global   -0.535       
+best_guess -0.121 -0.153
 ```
 Finally, the coefficients look similar in all three model fits! Even visually, I don't see any egregious deviations from the model fit. 
 
