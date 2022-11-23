@@ -1,3 +1,5 @@
+All code for this write-up can be found in model_comparisons.R
+
 # How do Humans Structure Conditionally-Dependent Predictions?
 Human-made machines tend to be carefully designed and callibrated for particular situations. But humans themselves are impressibly versatile. One component of this versatility is our ability to "predict" situations that may arise and prepare for them appropriately.
 
@@ -402,14 +404,104 @@ aggmod_4 <- nlme::nlme(RT ~ b0 + b1*p_global + b2*p_posterior + b3*plogis(500*(p
                     start = coef(naive_mod_4))
 ```
 
-For the sake of simplicity, I'm starting by letting only the Intercept and the threshold vary by participant.
+For the sake of simplicity, I'm starting by letting only the Intercept and the threshold vary by participant. Also, since the model is so complex, I'm modeling it only on the full dataset.
 
-Placing the threshold in conditional probability is not as crazy as it may sound - late ERP positivity effects such as the P600 provide some evidence that the brain can incur additional neural consequences when it encounters words that violate highly constraining contexts, over and above those reflected by the N400 ([Kuperberg & Jaeger, 2016](https://www.tandfonline.com/doi/pdf/10.1080/23273798.2015.1102299?needAccess=true).[Kuperberg (2007)](https://reader.elsevier.com/reader/sd/pii/S0006899306036821?token=DBAD6CA0B990F7C4A3F867A445220DF83A72944AE05923A161B970FEAF6E897559A6C8A2B35EF0427BE056A371F3850B&originRegion=eu-west-1&originCreation=20221123114908) goes so far as to propose two distinct streams in languagee processing: one purely lexical/associational and one that incorporates higher-level (e.g. syntactic) knowledge.
-
+Placing the threshold in conditional probability is not as crazy as it may sound - late ERP positivity effects such as the P600 provide some evidence that the brain can incur additional neural consequences when it encounters words that violate highly constraining contexts, over and above those reflected by the N400 ([Kuperberg & Jaeger, 2016](https://www.tandfonline.com/doi/pdf/10.1080/23273798.2015.1102299?needAccess=true)).[Kuperberg (2007)](https://reader.elsevier.com/reader/sd/pii/S0006899306036821?token=DBAD6CA0B990F7C4A3F867A445220DF83A72944AE05923A161B970FEAF6E897559A6C8A2B35EF0427BE056A371F3850B&originRegion=eu-west-1&originCreation=20221123114908) goes so far as to propose two distinct streams in language processing: one purely lexical/associational and one that incorporates higher-level (e.g. syntactic) knowledge.
 
 ##### Results
 ```r
+Nonlinear mixed-effects model fit by maximum likelihood
+  Model: RT ~ b0 + b1 * p_global + b2 * p_posterior + b3 * plogis(500 * (p_conditional + brk)) 
+  Data: d_agg 
 
+Random effects:
+ Formula: list(b0 ~ 1, brk ~ 1)
+ Level: ID
+ Structure: General positive-definite, Log-Cholesky parametrization
+         StdDev       Corr  
+b0       5.533979e+01 b0    
+brk      5.250594e-04 -0.921
+Residual 3.431272e+01       
+
+Fixed effects:  b0 + b1 + b2 + b3 + brk ~ 1 
+        Value Std.Error  DF    t-value p-value
+b0   470.1223 12.028982 114    39.0825  0.0000
+b1   -16.7075 12.743208 114    -1.3111  0.1925
+b2    11.2485 23.927261 114     0.4701  0.6392
+b3  -111.4537 15.049238 114    -7.4059  0.0000
+brk   -0.8013  0.000768 114 -1043.4984  0.0000
+ Correlation: 
+    b0     b1     b2     b3    
+b1  -0.475                     
+b2  -0.056 -0.272              
+b3   0.114 -0.038 -0.724       
+brk  0.084 -0.222  0.342  0.010
 ```
 
-- Surprise: Negative Log-Probability of Outcome?
+The model doesn't seem to want the threshold to vary at all. Also, p_posterior has essentially no effect. Let's get a better sense of what this function looks like.
+
+![aggmod_3](figures/aggmod_3_p_conditional.png)
+
+Ahh. It wants to put the Experiment 1.1 `A`→ `X` and `B`→ `Y` conditions right in the middle of the sigmoid curve. That feels like cheating to me.
+The above figure doesn't account for the real-life relationships between global, posterior, and conditional probabilities. Let's take a look at fitted values for the true data. 
+
+![aggmod_3](figures/aggmod_3_fitted_p_conditional.png)
+![aggmod_3](figures/aggmod_3_fitted_p_global.png)
+
+This looks really good, actually.
+
+Before formal model comparisons, I'm going to revise the model a bit. First, I'll take out `p_posterior`, which seems to be hurting. I'll also change the threshold to a fixed effect. With my extra parameters, I'll make random effects for `p_global` and the magnitude of the WM boost.
+
+```r
+aggmod_5 <- nlme::nlme(RT ~ b0 + b1*p_global + b2*plogis(100*(p_conditional + brk)),
+                       data = d_agg,
+                       fixed = b0 + b1 + b2 + brk ~ 1,
+                       random = b0 + b1 + b2 ~ 1,
+                       groups = ~ ID,
+                       start = coef(naive_mod_5))
+
+aggmod_5
+
+#> Nonlinear mixed-effects model fit by maximum likelihood
+#>   Model: RT ~ b0 + b1 * p_global + b2 * plogis(100 * (p_conditional +      brk)) 
+#>   Data: d_agg 
+#>   Log-likelihood: -781.3611
+#>   Fixed: b0 + b1 + b2 + brk ~ 1 
+#>          b0          b1          b2         brk 
+#> 474.9976198 -23.2791269 -95.7532512  -0.8022666 
+#> 
+#> Random effects:
+#>  Formula: list(b0 ~ 1, b1 ~ 1, b2 ~ 1)
+#>  Level: ID
+#>  Structure: General positive-definite, Log-Cholesky parametrization
+#>          StdDev   Corr         
+#> b0       69.07262 b0     b1    
+#> b1       67.61850 -0.697       
+#> b2       56.79809  0.698 -0.693
+#> Residual 23.71952              
+#> 
+#> Number of Observations: 152
+#> Number of Groups: 34 
+```
+
+Sure enough, the model has the effect of `p_global` varying quite a lot between participants. This is important, because it explains the correlation I observed early in this analysis - that participants who's times go up more from `A`→ `X` to `A`→ `Y` also go up more from `B`→ `X` to `B`→ `Y`. I'm less sure what, if anything, to do with individual differences in the size of the WM boost.
+
+Time for another round of formal model comparisons. flexplot's model.comparison can't deal with nonlinear mixed effects models, so I'll content myself with AIC and BIC. 
+
+###### AIC
+Model 1 (df = 10): 1625.326
+Model 2 (df = 10): 1623.05
+Model 3 (df = 10): 1652.397
+Model 4 (df = 9 ): 1612.108
+Model 5 (df = 11): 1584.722
+
+###### BIC
+Model 1 (df = 10): 1655.565
+Model 2 (df = 10): 1653.289
+Model 3 (df = 10): 1639.323
+Model 4 (df = 9 ): 1639.323
+Model 5 (df = 11): 1617.985
+
+Model 5 does look best for the full dataset! I do still have two concerns about this model, though:
+1. 
+
