@@ -338,46 +338,34 @@ Coefficients:
 p_global      -51.61      30.58  -1.687   0.0956 .  
 best_guess    -44.34      18.35  -2.416   0.0181 *  
 ```
-Finally, the coefficients look similar in all three model fits! Even visually, 
+Finally, the coefficients look similar in all three model fits! Even visually, I don't see any egregious deviations from the model fit. 
 
 ![aggmod_3](figures/aggmod_3.png)
 
-#### Model 4: LTM = Summed Proportional Associations, WM = Conditional Best Guess
+To check whether `best_guess` is explaining any variance that `p_conditional` wasn't (`best_guess` is just a binned `p_conditional`), let's run that model again with both predictors.
 
-##### Results
 ```r
-Call:
-lm(formula = RT ~ p_global + p_posterior + best_guess, data = d_agg)
+Formula: RT ~ 1 + p_global + p_conditional + best_guess + (1 + p_global +  
+    p_conditional + best_guess | ID)
+   Data: d_agg
 
-Coefficients:
-            Estimate Std. Error t value Pr(>|t|)    
-(Intercept)   484.79      14.40  33.672  < 2e-16 ***
-p_global      -21.15      24.73  -0.856  0.39363    
-p_posterior  -100.26      34.37  -2.917  0.00409 ** 
-best_guess    -13.77      14.11  -0.976  0.33063    
+Random effects:
+ Groups   Name          Std.Dev. Corr             
+ ID       (Intercept)    67.74                    
+          p_global       69.30   -0.21            
+          p_conditional 172.58   -0.22 -0.68      
+          best_guess     56.83    0.08  0.73 -0.99
+ Residual                22.64                    
+Number of obs: 152, groups:  ID, 34
 
-Call:
-lm(formula = RT ~ p_global + p_posterior + best_guess, data = d1_agg)
-
-Coefficients:
-            Estimate Std. Error t value Pr(>|t|)    
-(Intercept)   484.36      24.23  19.991   <2e-16 ***
-p_global      -67.88      47.95  -1.415   0.1615    
-p_posterior    42.67      49.34   0.865   0.3903    
-best_guess    -46.44      20.94  -2.218   0.0299 *  
-
-Call:
-lm(formula = RT ~ p_global + p_posterior + best_guess, data = d2_agg)
-
-Coefficients:
-              Estimate Std. Error t value Pr(>|t|)    
-(Intercept)  494.15684   18.81275  26.267  < 2e-16 ***
-p_global      -2.60319   29.74007  -0.088    0.930    
-p_posterior -220.83212   50.65546  -4.359 4.04e-05 ***
-best_guess     0.08147   19.40974   0.004    0.997    
+Fixed Effects:
+  (Intercept)       p_global  p_conditional     best_guess  
+       539.30         -26.81        -211.29          65.11  
 ```
 
-#### Model 5: LTM = Summed Proportional Associations, WM = Conditional Load Threshold
+Indeed, it looks like `best_guess` isn't doing anything except making the mixed-effects model confused about the independent effect of `p_conditional`.
+
+#### Model 4: LTM = Summed Proportional Associations, WM = Conditional Load Threshold
 
 Ness and Meltzer-Asscher (2021) 
 "At every stage during sentence processing, multiple representations in long-term memory are pre-activated. Many different factors contribute to the activation level of a word: the context, lexical properties of the word (e.g., frequency), idiosyncratic influences, and random noise. Once the activation level of a certain word reaches a retrieval threshold, this word is regarded as retrieved, which initiates its integration into the sentence's representation being built in WM." 
