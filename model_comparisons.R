@@ -44,8 +44,8 @@ d1 <- d1 %>%
 
 d1_agg <- d1 %>%
   group_by(ID, condition, cue, probe, p_cue, p_global, p_conditional) %>%
-  summarise(RT = mean(RT),
-            correct = mean(correct)) %>%
+  summarise(RT = mean(RT, na.rm = T),
+            correct = mean(correct, na.rm = T)) %>%
   mutate(p_posterior = p_cue*p_conditional) %>%
   mutate(best_guess = round(p_conditional))
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -94,8 +94,8 @@ d2 <- d2 %>%
 
 d2_agg <- d2 %>%
   group_by(ID, condition, cue, probe, p_cue, p_global, p_conditional) %>%
-  summarise(RT = mean(RT),
-            correct = mean(correct)) %>%
+  summarise(RT = mean(RT, na.rm = T),
+            correct = mean(correct, na.rm = T)) %>%
   mutate(p_posterior = p_cue*p_conditional) %>%
   mutate(best_guess = round(p_conditional))
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -108,8 +108,8 @@ d <- d1 %>% add_row(d2) %>%
 # Aggregated by participant/condition
 d_agg <- d %>%
   group_by(ID, condition, cue, probe, p_cue, p_global, p_conditional, best_guess) %>%
-  summarise(RT = mean(RT),
-            correct = mean(correct)) %>%
+  summarise(RT = mean(RT, na.rm = T),
+            correct = mean(correct, na.rm = T)) %>%
   mutate(p_posterior = p_cue*p_conditional)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -127,9 +127,10 @@ d1_agg %>%
 
 d2_agg %>%
   ggplot(aes(condition, RT, color = as.factor(ID), group = as.factor(ID))) +
-  geom_path(alpha = .8, size = 1) +
-  geom_point() +
-  scale_color_brewer(palette = "Paired") +
+  geom_path(alpha = .5, size = 1) +
+  geom_point(alpha = .9, size = 2) +
+  scale_alpha_discrete(range = c(.1, .9)) +
+  scale_size_discrete(range = c(2, 3)) +
   theme_minimal() +
   theme(legend.position = "none") +
   labs(title = "Experiment 1.2", x = "Condition", y = "Participant Mean RT (ms)")
@@ -175,6 +176,43 @@ d2 %>%
   scale_y_continuous(limits = c(200, 800))
 
 # Main conclusion: this is tricky to visualize.
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+# Some non-causal modeling
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+library(ggcorrplot)
+
+# Do participants who's times go up from A→ X to A→ Y also go up from B→ X to B→ Y, and vice versa?
+d2_agg %>%
+  pivot_wider(id_cols = ID, names_from = condition, names_prefix = "RT_", values_from = RT) %>%
+  mutate(AXtoAY_diff = RT_AX - RT_AY,
+         BXtoBY_diff = RT_BX - RT_BY,
+         ABXtoCX_diff = mean(c(RT_AX, RT_BX)) - RT_CX) %>%
+  ungroup() %>%
+  select(AXtoAY_diff:ABXtoCX_diff) %>%
+  ggplot(aes(AXtoAY_diff, BXtoBY_diff)) +
+    geom_point() +
+    theme_minimal() +
+    annotate("rect", xmin = -150, xmax = 0, ymin = -75, ymax = 125,
+             alpha = .1,fill = "red") +
+    annotate("rect", xmin = -150, xmax = 75, ymin = -75, ymax = 0,
+             alpha = .1,fill = "red") +
+    annotate("text", x = -75, y = -35, label = "X is always \nquicker", alpha = .5) +
+    annotate("text", x = -75, y = 60, label = "X is quicker \nafter A only", alpha = .5) +
+    annotate("text", x = 35, y = -35, label = "X is quicker \nafter B only", alpha = .5) +
+    labs(title = "Participant RTs for X and Y Prompts in Experiment 1.2",
+         subtitle = "Excluding C -> X condition",
+         x = "Difference between X and Y RTs after A",
+         y = "Difference between X and Y RTs after B")
+
+d1_agg %>%
+  pivot_wider(id_cols = ID, names_from = condition, names_prefix = "RT_", values_from = RT) %>%
+  mutate(AXtoAY_diff = RT_AX - RT_AY,
+         BXtoBY_diff = RT_BX - RT_BY) %>%
+  ungroup() %>%
+  select(AXtoAY_diff:BXtoBY_diff) %>%
+  cor()
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 # Model Comparisons: Aggregated by Participant/Condition
@@ -225,11 +263,11 @@ visualize(aggmod_2, plot = "model", formula = RT ~ p_posterior | p_global, jitte
 
 aggmod_2.1 <- lmer(RT ~ 1 + p_global + p_posterior + (1 + p_global + p_posterior | ID), d1_agg)
 summary(aggmod_2.1)
-visualize(aggmod_2.1)
+visualize(aggmod_2.1, plot = "model", formula = RT ~ p_posterior | p_global, jitter = .01)
 
 aggmod_2.2 <- lmer(RT ~ 1 + p_global + p_posterior + (1 + p_global + p_posterior | ID), d2_agg)
 summary(aggmod_2.2)
-visualize(aggmod_2.2)
+visualize(aggmod_2.2, plot = "model", formula = RT ~ p_posterior | p_global, jitter = .01)
 
 # Model 3: LTM = Base Rate, WM = Conditional Best Guess
 aggmod_3 <- lmer(RT ~ 1 + p_global + best_guess + (1 + p_global + best_guess | ID), d_agg)
@@ -245,59 +283,179 @@ aggmod_3.2 <- lmer(RT ~ 1 + p_global + best_guess + (1 + p_global + best_guess |
 summary(aggmod_3.2)
 visualize(aggmod_3.2)
 
-# Model 4: LTM = Associative Model, WM = Conditional Best Guess
-aggmod_4 <- lm(RT ~ p_global + p_posterior + best_guess, d_agg)
-summary(aggmod_4)
-visualize(aggmod_4)
+  # Same thing with p_conditional to see if best_guess is really adding anything
+  
+  lmer(RT ~ 1 + p_global + p_conditional + best_guess + (1 + p_global + p_conditional + best_guess | ID), d_agg)
 
-aggmod_4.1 <- lm(RT ~ p_global + p_posterior + best_guess, d1_agg)
-summary(aggmod_4.1)
-visualize(aggmod_4.1)
-
-aggmod_4.2 <- lm(RT ~ p_global + p_posterior + best_guess, d2_agg)
-summary(aggmod_4.2)
-visualize(aggmod_4.2)
-
-# WM has a huge positive effect here, which seems wrong. It looks like it's inflating the effect of p_conditional and making up for it with best_guess
-
-
-# Model 5: LTM = Associative Model, WM = Conditional Load Threshold (NOW FOR THE HARD PART)
+# Model 4: LTM = Associative Model, WM = Conditional Load Threshold (NOW FOR THE HARD PART)
 # Useful resources: https://stat.ethz.ch/pipermail/r-sig-mixed-models/2007q4/000472.html
 #                   https://discourse.mc-stan.org/t/piecewise-linear-mixed-models-with-a-random-change-point/5306/15
 
 # fit naive nonlinear model (so that we can give multilevel model reasonable starting points for coefficients)
 # the logistic function is a practical alternative to a true step function, which spells trouble for gradient descent
 # multstart introduces some randomness to avoid converging on local maxima and to help with converging in general
-naive_mod_3 <- nls.multstart::nls_multstart(RT ~ b0 + b1*p_global + b2*p_conditional + b3*plogis(100*(p_conditional + brk)),
-                                            data = d,
+naive_mod_4 <- nls.multstart::nls_multstart(RT ~ b0 + b1*p_global + b2*p_posterior + b3*plogis(500*(p_conditional + brk)),
+                                            data = d_agg,
                                             start_lower = c(b0 = 100, b1 = -500, b2 = -500, b3 = -500, brk  = -2),
                                             start_upper = c(b0 = 1000, b1 = 500, b2 = 500, b3 = 500, brk  = 2),
                                             iter = 500,
                                             supp_errors = "Y")
 
-summary(naive_mod_3)
+summary(naive_mod_4)
 # Again WM has a huge positive effect here, which seems wrong. Things are not looking good for binary boosts in general.
 # Nevertheless, I'll start letting only threshold vary by participant
-mod_3 <- nlme::nlme(RT ~ b0 + b1*p_global + b2*p_conditional + b3*plogis(100*(p_conditional + brk)),
-                    data = d,
+aggmod_4 <- nlme::nlme(RT ~ b0 + b1*p_global + b2*p_posterior + b3*plogis(500*(p_conditional + brk)),
+                    data = d_agg,
                     fixed = b0 + b1 + b2 + b3 + brk ~ 1,
-                    random = brk ~ 1,
+                    random = b0 + brk ~ 1,
                     groups = ~ ID,
-                    start = coef(naive_mod_3))
+                    start = coef(naive_mod_4))
 
-summary(mod_3)
+summary(aggmod_4)
 
-coef(mod_3) %>%
-  mutate(ID = sort(unique(d$ID))) %>%
-  right_join(tibble(ID = sample(d$ID),
-                    p_global = seq(0, 1, length.out = nrow(d)),
-                    p_conditional = seq(0, 1, length.out = nrow(d)))) %>%
-  mutate(RT = b0 + b1*p_global + b2*p_conditional + b3*plogis(100*(p_conditional + brk))) %>%
+aggmod_4_fitted <- coef(aggmod_3) %>%
+  mutate(ID = sort(unique(d_agg$ID))) %>%
+  tidyr::expand(nesting(ID, b0, b1, b2, b3, brk), 
+                p_global = seq(0.132, .8, length.out = 100),
+                p_posterior = seq(0.06, .64, length.out = 100),
+                p_conditional = seq(0.2, 1, length.out = 200)) %>%
+  mutate(RT = b0 + b1*p_global + b2*p_posterior + b3*plogis(500*(p_conditional + brk)))
+
+aggmod_4_fitted %>%
+  group_by(ID, p_conditional) %>%
+  summarise(RT = mean(RT)) %>%
   ggplot(aes(p_conditional, RT)) +
-  geom_line(aes(group = ID)) +
-  geom_quasirandom(aes(p_conditional, RT), data = d, alpha = .1)
+    geom_quasirandom(aes(p_conditional, RT, color = as.factor(ID)), data = d_agg, alpha = .5, method = "pseudorandom", width = .01) +
+    geom_line(aes(group = as.factor(ID), color = as.factor(ID)), alpha = .3) +
+    theme_minimal() +
+    theme(legend.position = "none")
 
-# Model 6: LTM = Associative Model, WM = LTM Load Threshold
+# Model Predictions with p_conditional on x axis
+coef(aggmod_4) %>%
+  mutate(ID = sort(unique(d_agg$ID))) %>%
+  right_join(d_agg %>% select(!RT)) %>%
+  mutate(RT = b0 + b1*p_global + b2*p_posterior + b3*plogis(500*(p_conditional + brk))) %>%
+  ggplot(aes(p_conditional, RT)) +
+  geom_quasirandom(aes(p_conditional, RT, color = as.factor(ID)), data = d_agg, alpha = .3, method = "pseudorandom", width = .04) +
+  geom_point(aes(group = as.factor(ID), color = as.factor(ID)), alpha = .8, size = 2) +
+  geom_point(aes(p_conditional, RT), alpha = .03, size = 4, 
+             data = coef(aggmod_4) %>%
+               summarise_all(mean) %>%
+               right_join(d_agg %>% select(!RT), by = character()) %>%
+               group_by(p_conditional) %>%
+               summarise(RT = mean(b0) + mean(b1)*mean(p_global) + mean(b2)*mean(p_posterior) + mean(b3)*plogis(500*(p_conditional + brk)))) + 
+  theme_minimal() +
+  theme(legend.position = "none") +
+  labs(title = "Model 4 Fitted Values (Full Dataset)")
+
+# Model Predictions with p_posterior on x axis
+coef(aggmod_4) %>%
+  mutate(ID = sort(unique(d_agg$ID))) %>%
+  right_join(d_agg %>% select(!RT)) %>%
+  mutate(RT = b0 + b1*p_global + b2*p_posterior + b3*plogis(500*(p_conditional + brk))) %>%
+  ggplot(aes(p_posterior, RT)) +
+  geom_quasirandom(aes(p_posterior, RT, color = as.factor(ID)), data = d_agg, alpha = .3, method = "pseudorandom", width = .04) +
+  geom_point(aes(group = as.factor(ID), color = as.factor(ID)), alpha = .8, size = 2) +
+  geom_point(aes(p_posterior, RT), alpha = .03, size = 4, 
+             data = coef(aggmod_4) %>%
+               summarise_all(mean) %>%
+               right_join(d_agg %>% select(!RT), by = character()) %>%
+               group_by(p_posterior) %>%
+               summarise(RT = mean(b0) + mean(b1)*mean(p_global) + mean(b2)*p_posterior + mean(b3)*plogis(500*(mean(p_conditional) + brk)))) + 
+  theme_minimal() +
+  theme(legend.position = "none") +
+  labs(title = "Model 4 Fitted Values (Full Dataset)")
+
+# Model Predictions with p_global on x axis
+coef(aggmod_4) %>%
+  mutate(ID = sort(unique(d_agg$ID))) %>%
+  right_join(d_agg %>% select(!RT)) %>%
+  mutate(RT = b0 + b1*p_global + b2*p_posterior + b3*plogis(500*(p_conditional + brk))) %>%
+  ggplot(aes(p_global, RT)) +
+  geom_quasirandom(aes(p_global, RT, color = as.factor(ID)), data = d_agg, alpha = .3, method = "pseudorandom", width = .04) +
+  geom_point(aes(group = as.factor(ID), color = as.factor(ID)), alpha = .8, size = 2) +
+  geom_point(aes(p_global, RT), alpha = .03, size = 4, 
+             data = coef(aggmod_4) %>%
+               summarise_all(mean) %>%
+               right_join(d_agg %>% select(!RT), by = character()) %>%
+               group_by(p_global) %>%
+               summarise(RT = mean(b0) + mean(b1)*p_global + mean(b2)*mean(p_posterior) + mean(b3)*plogis(500*(mean(p_conditional) + brk)))) + 
+  theme_minimal() +
+  theme(legend.position = "none") +
+  labs(title = "Model 4 Fitted Values (Full Dataset)")
+
+AIC(aggmod_1, aggmod_2, aggmod_3, aggmod_4, aggmod_5)
+
+BIC(aggmod_1, aggmod_2, aggmod_3, aggmod_4, aggmod_5)
+
+
+# Model 5: LTM = Associative Model, WM = LTM Load Threshold
+
+naive_mod_5 <- nls.multstart::nls_multstart(RT ~ b0 + b1*p_global + b2*plogis(100*(p_conditional + brk)),
+                                            data = d_agg,
+                                            start_lower = c(b0 = 100, b1 = -500, b2 = -500, brk  = -2),
+                                            start_upper = c(b0 = 1000, b1 = 500, b2 = 500, brk  = 2),
+                                            iter = 500,
+                                            supp_errors = "Y")
+
+summary(naive_mod_5)
+# Again WM has a huge positive effect here, which seems wrong. Things are not looking good for binary boosts in general.
+# Nevertheless, I'll start letting only threshold vary by participant
+aggmod_5 <- nlme::nlme(RT ~ b0 + b1*p_global + b2*plogis(100*(p_conditional + brk)),
+                       data = d_agg,
+                       fixed = b0 + b1 + b2 + brk ~ 1,
+                       random = b0 + b1 + b2 ~ 1,
+                       groups = ~ ID,
+                       start = coef(naive_mod_5))
+
+summary(aggmod_5)
+
+
+
+coef(aggmod_5) %>%
+  mutate(ID = sort(unique(d_agg$ID))) %>%
+  right_join(d_agg %>% select(!RT)) %>%
+  mutate(RT = b0 + b1*p_global + b2*plogis(100*(p_conditional + brk))) %>%
+  ggplot(aes(p_conditional, RT)) +
+  geom_quasirandom(aes(p_conditional, RT, color = as.factor(ID)), data = d_agg, alpha = .3, method = "pseudorandom", width = .04) +
+  geom_point(aes(group = as.factor(ID), color = as.factor(ID)), alpha = .8, size = 2) +
+  geom_point(aes(p_conditional, RT), alpha = .03, size = 4, 
+             data = coef(aggmod_5) %>%
+               summarise_all(mean) %>%
+               right_join(d_agg %>% select(!RT), by = character()) %>%
+               group_by(p_conditional) %>%
+               summarise(RT = mean(b0) + mean(b1)*mean(p_global) + mean(b2)*plogis(100*(mean(p_conditional) + brk)))) + 
+  theme_minimal() +
+  theme(legend.position = "none") +
+  labs(title = "Model 5 Fitted Values (Full Dataset)")
+
+
+aggmod_5_fitted <- coef(aggmod_5) %>%
+  mutate(ID = sort(unique(d_agg$ID))) %>%
+  tidyr::expand(nesting(ID, b0, b1, b2, brk), 
+                p_global = seq(0.132, .8, length.out = 50),
+                p_posterior = seq(0.06, .64, length.out = 100),
+                p_conditional = seq(0.2, 1, length.out = 100)) %>%
+  mutate(RT = b0 + b1*p_global + b2*plogis(100*(p_conditional + brk)))
+
+aggmod_5_fitted %>%
+  group_by(ID, p_conditional) %>%
+  summarise(RT = mean(RT)) %>%
+  ggplot(aes(p_conditional, RT)) +
+  geom_quasirandom(aes(p_conditional, RT, color = as.factor(ID)), data = d_agg, alpha = .5, method = "pseudorandom", width = .01) +
+  geom_line(aes(group = as.factor(ID), color = as.factor(ID)), alpha = .3) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+aggmod_5_fitted %>%
+  group_by(ID, p_global) %>%
+  summarise(RT = mean(RT)) %>%
+  ggplot(aes(p_global, RT)) +
+  geom_quasirandom(aes(p_global, RT, color = as.factor(ID)), data = d_agg, alpha = .5, method = "pseudorandom", width = .01) +
+  geom_line(aes(group = as.factor(ID), color = as.factor(ID)), alpha = .3) +
+  theme_minimal() +
+  theme(legend.position = "none")
+
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -339,6 +497,7 @@ coef(mod_3) %>%
   ggplot(aes(p_conditional, RT)) +
     geom_line(aes(group = ID)) +
     geom_quasirandom(aes(p_conditional, RT), data = d, alpha = .1)
+
 
 # Model 4: LTM = Associative Model, WM = LTM Load Threshold
 
