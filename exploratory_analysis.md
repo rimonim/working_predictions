@@ -43,7 +43,7 @@ Is this pattern also in the experiment 1.1 results? Maybe. There, `AXtoAY_diff` 
 
 Before I continue, I'd like to take a closer look at the correlation between `AXtoAY_diff` and `BXtoBY_diff` in experiment 1.2. 
 
-![Scatterplot of Differences Between X and Y RTs](figures/xydifferences_scatterplot.png)
+![Scatterplot of Differences Between X and Y RTs](figures/xydifference_scatterplot.png)
 
 The "X is always quicker" group must be relying primarily on task-global probabilities of the prompts, which strongly favor X (X appears 80% of the time across conditions). The "X is quicker after A only" group is presumably more able to account for conditional probabilities, which favor X after A (67%) but not after B (33%). Unsurprisingly, this is the biggest group. 
 The last two groups, for which Y is quicker after the A cue (or always), are the most strange to me. Maybe these are people with low sensitivity to any predictive cues who ended up there by random chance?
