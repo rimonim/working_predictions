@@ -506,3 +506,6 @@ Model 5 does look best for the full dataset! I do still have a couple concerns a
 1. Putting the `p_conditional` = .8 group in the middle of the sigmoid curve is suspicious. The model wants to do this because the effect of `p_global` can't come close to explaining the difference in RT between the `A`→`X`/`B`→`Y` conditions of Experiment 1.1 and the `C`→`X` condition in Experiment 1.2.
 2. If the universal WM updating threshold were right around p_conditional = .8, I would expect the variance in RT at that point to be especially high relative to p_conditional = 1, at which everybody should be pre-updating all the time. In fact, we see the opposite. This is strange.
 
+
+##### P.S.
+I ran most of these models again using surprisal (negative log probability) of outcomes rather than probability. The fit was universally worse.
