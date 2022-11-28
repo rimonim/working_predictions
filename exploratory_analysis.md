@@ -507,5 +507,5 @@ Model 5 does look best for the full dataset! I do still have a couple concerns a
 2. If the universal WM updating threshold were right around p_conditional = .8, I would expect the variance in RT at that point to be especially high relative to p_conditional = 1, at which everybody should be pre-updating all the time. In fact, we see the opposite. This is strange.
 
 
-##### P.S.
+#### P.S.
 I ran most of these models again using surprisal (negative log probability) of outcomes rather than probability. The fit was universally worse.
