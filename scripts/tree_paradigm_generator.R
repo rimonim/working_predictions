@@ -1,5 +1,5 @@
 # This is a tool for generating new experimental paradigms (with tree depth = 3)
-# tree: a tibble with the following columns (example at bottom):
+# tree: a tibble with the following columns:
   #   start_cue = <chr>
   #   start_cue_p = <dbl>
   #   mid_cue = <list of length start_cue>
@@ -46,9 +46,13 @@ draw_tree <- function(tree){
   
   # Plot
   tree %>%
-    mutate(start_cue_y = rep(seq_along(rle(start_cue)$values), times = rle(start_cue)$lengths)*mean(rle(start_cue)$lengths) - .25*mean(rle(start_cue)$lengths),
-           mid_cue_y = rep(seq_along(rle(paste(start_cue, mid_cue))$values), times = rle(paste(start_cue, mid_cue))$lengths)*mean(rle(paste(start_cue, mid_cue))$lengths),
-           probe_y = rep(seq_along(rle(paste(start_cue, mid_cue, probe))$values), times = rle(paste(start_cue, mid_cue, probe))$lengths)*mean(rle(paste(start_cue, mid_cue, probe))$lengths) + .5**mean(rle(probe)$lengths)) %>%
+    mutate(probe_y = rep(seq_along(rle(paste(start_cue, mid_cue, probe))$values), 
+                         times = rle(paste(start_cue, mid_cue, probe))$lengths)   *mean(rle(paste(start_cue, mid_cue, probe))$lengths),
+           mid_cue_y = rep(seq_along(rle(paste(start_cue, mid_cue))$values), 
+                           times = rle(paste(start_cue, mid_cue))$lengths)   *mean(rle(paste(start_cue, mid_cue))$lengths),
+           start_cue_y = rep(seq_along(rle(start_cue)$values), 
+                             times = rle(start_cue)$lengths)   *mean(rle(start_cue)$lengths) - .25*mean(rle(start_cue)$lengths)
+           ) %>%
     ggplot() +
     # Lines
     geom_segment(aes(x = 1, xend = 1.5, y = start_cue_y, yend = mid_cue_y), size = 3, alpha = .1) +
@@ -63,25 +67,22 @@ draw_tree <- function(tree){
     geom_label(aes(x = 1, y = start_cue_y, label = start_cue), size = 8) +
     geom_label(aes(x = 2, y = mid_cue_y, label = mid_cue), size = 8) +
     geom_label(aes(x = 3, y = probe_y, label = probe), size = 8) +
-    # Stats
+    # Stats with alpha coding
     geom_tile(aes(x = 4, y = probe_y + .2, width = 1.5, height = .2, fill = probe_p, alpha = probe_p)) +
     geom_tile(aes(x = 4, y = probe_y, width = 1.5, height = .2, fill = p_associative, alpha = p_associative)) +
     geom_tile(aes(x = 4, y = probe_y - .2, width = 1.5, height = .2, fill = p_global, alpha = p_global)) +
-  
-    geom_text(aes(x = 4, y = probe_y, label = paste("conditional = ", probe_p, "\n",
-                                                    "associative = ", p_associative
-                                                    ,"\n", "global = ", p_global
-                                                    ))) +
+    geom_text(aes(x = 4, y = probe_y + .2, label = paste("conditional = ", probe_p))) +
+    geom_text(aes(x = 4, y = probe_y, label = paste("associative = ", p_associative))) +
+    geom_text(aes(x = 4, y = probe_y - .2, label = paste("global = ", p_global))) +
 
     theme_void() +
     theme(legend.position = "none") +
     scale_fill_gradient(low = "green", high = "green") + 
     scale_alpha_continuous(range = c(.1, 1)) + 
     scale_x_continuous(limits = c(0, 5)) +
-    scale_y_continuous(limits = c(1, length(tree$probe) + 1))
+    scale_y_continuous(limits = c(0.7, length(tree$probe) + .4))
   }
 
-# Example
 tibble(start_cue =           c("A",                            "B"),
        start_cue_p =         c(.5,                             .5),
        mid_cue =   list(     c("A",         "B"),            c("A",         "B")),
@@ -89,4 +90,3 @@ tibble(start_cue =           c("A",                            "B"),
        probe =     list(list(c("X", "Y"), c("X", "Y")), list(c("X", "Y"), c("X", "Y"))),
        probe_p =   list(list(c( .9, .1), c(  .9,   .1)), list(c( .9,  .1), c( .1,  .9)))
        ) %>% draw_tree()
-
