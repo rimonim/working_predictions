@@ -39,7 +39,7 @@ draw_tree <- function(tree){
     right_join(tree, by = c("mid_cue", "probe"))
   
   tree <- tree %>%
-    mutate(p_associative = (probe_with_start_cue + probe_with_mid_cue)/2)  %>%
+    mutate(p_associative = probe_with_start_cue + probe_with_mid_cue)  %>%
     arrange(probe) %>%
     arrange(mid_cue) %>%
     arrange(start_cue)
@@ -69,7 +69,7 @@ draw_tree <- function(tree){
     geom_label(aes(x = 3, y = probe_y, label = probe), size = 8) +
     # Stats with alpha coding
     geom_tile(aes(x = 4, y = probe_y + .2, width = 1.5, height = .2, fill = probe_p, alpha = probe_p)) +
-    geom_tile(aes(x = 4, y = probe_y, width = 1.5, height = .2, fill = p_associative, alpha = p_associative)) +
+    geom_tile(aes(x = 4, y = probe_y, width = 1.5, height = .2, fill = p_associative, alpha = p_associative/2)) +
     geom_tile(aes(x = 4, y = probe_y - .2, width = 1.5, height = .2, fill = p_global, alpha = p_global)) +
     geom_text(aes(x = 4, y = probe_y + .2, label = paste("conditional = ", probe_p))) +
     geom_text(aes(x = 4, y = probe_y, label = paste("associative = ", p_associative))) +
@@ -90,3 +90,4 @@ tibble(start_cue =           c("A",                            "B"),
        probe =     list(list(c("X", "Y"), c("X", "Y")), list(c("X", "Y"), c("X", "Y"))),
        probe_p =   list(list(c( .9, .1), c(  .9,   .1)), list(c( .9,  .1), c( .1,  .9)))
        ) %>% draw_tree()
+
