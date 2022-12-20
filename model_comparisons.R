@@ -27,7 +27,7 @@ visualize(aggmod_0.2, plot = "model", alpha = .8, sample = 10)
 # Model 1: Summed Parallel Predictions
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
-aggmod_1 <- lmer(RT ~ 1 + p_global + p_conditional + (1 + p_global + p_conditional | ID), d_agg)
+aggmod_1 <- lmer(RT ~ 1 + p_global + p_conditional + (1 + p_global + p_conditional | ID), d_agg2)
 summary(aggmod_1)
 visualize(aggmod_1, plot = "model", formula = RT ~ p_conditional + ID | p_global, jitter = .01, alpha = .8, sample = 34) +
   labs(title = "Model 1 (Unified Dataset)") +
@@ -47,7 +47,7 @@ visualize(aggmod_1.2)
 # Model 2: Summed Proportional Stimulus-Response Associations
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
-aggmod_2 <- lmer(RT ~ 1 + p_global + p_conjunction + (1 + p_global + p_conjunction | ID), d_agg)
+aggmod_2 <- lmer(RT ~ 1 + p_global + p_conjunction + (1 + p_global + p_conjunction | ID), d_agg2)
 summary(aggmod_2)
 visualize(aggmod_2, plot = "model", formula = RT ~ p_conjunction | p_global, jitter = .01) +
   labs(title = "Model 2 (Unified Dataset)") +
@@ -195,11 +195,11 @@ BIC(aggmod_1, aggmod_2, aggmod_3, aggmod_4, aggmod_5)
   # random variables: mb_willingness
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
-naive_mod_6 <- lm(RT ~ p_global + p_conjunction + mb_utility:p_conditional, data = d_agg)
-naive_mod_6_globalonly <- lm(RT ~ p_global + mb_utility_globalonly:p_conditional, data = d_agg)
-naive_mod_6_conjunctiononly <- lm(RT ~ p_conjunction + mb_utility_conjunctiononly:p_conditional, data = d_agg)
-naive_mod_6_max <- lm(RT ~ p_global + p_conjunction + mb_utility_max:p_conditional, data = d_agg)
-naive_mod_6_min <- lm(RT ~ p_global + p_conjunction + mb_utility_min:p_conditional, data = d_agg)
+naive_mod_6 <- lm(RT ~ p_global + p_conjunction + mb_utility:p_conditional, data = d_agg2)
+naive_mod_6_globalonly <- lm(RT ~ p_global + mb_utility_globalonly:p_conditional, data = d_agg2)
+naive_mod_6_conjunctiononly <- lm(RT ~ p_conjunction + mb_utility_conjunctiononly:p_conditional, data = d_agg2)
+naive_mod_6_max <- lm(RT ~ p_global + p_conjunction + mb_utility_max:p_conditional, data = d_agg2)
+naive_mod_6_min <- lm(RT ~ p_global + p_conjunction + mb_utility_min:p_conditional, data = d_agg2)
 
 
 BIC(naive_mod_6, naive_mod_6_globalonly, naive_mod_6_conjunctiononly, naive_mod_6_max, naive_mod_6_min)
@@ -210,10 +210,10 @@ summary(naive_mod_6)
     naive_mod_1 <- lm(RT ~ p_global + p_conditional, data = d_agg)
     naive_mod_2 <- lm(RT ~ p_global + p_conjunction, data = d_agg)
 
-d_agg %>%
+d_agg2 %>%
   mutate(RT_pred = coef(naive_mod_6)[[1]] + coef(naive_mod_6)[[2]]*p_global + coef(naive_mod_6)[[3]]*p_conjunction + coef(naive_mod_6)[[4]]*mb_utility*p_conditional) %>%
   ggplot(aes(p_conditional, RT_pred)) +
-    geom_quasirandom(aes(p_conditional, RT), data = d_agg, alpha = .3, method = "pseudorandom", width = .04) +
+    geom_quasirandom(aes(p_conditional, RT), data = d_agg2, alpha = .3, method = "pseudorandom", width = .04) +
     geom_line(color = "orange") + 
     theme_minimal() +
     theme(legend.position = "none") +
@@ -225,19 +225,43 @@ d_agg %>%
 
 AIC(naive_mod_1, naive_mod_2, naive_mod_6)
 
-# Again WM has a huge positive effect here, which seems wrong. Things are not looking good for binary boosts in general.
-# Nevertheless, I'll start letting only threshold vary by participant
-aggmod_6 <- nlme::nlme(RT ~ b0 + b1*p_global + b2*p_conjunction + b3*mb_utility*p_conditional*mb_willingness,
-                       data = d_agg,
-                       fixed = b0 + b1 + b2 + b3 + mb_willingness ~ 1,
-                       random = b0 + mb_willingness ~ 1,
-                       groups = ~ ID,
-                       start = coef(naive_mod_6))
+# Now for some Multilevel Modeling
+library(lme4)
+
+aggmod_6 <- lmer(RT ~ 1 + p_global + p_conjunction + mb_utility:p_conditional + (1 + p_conjunction + mb_utility:p_conditional | ID), 
+              data = d_agg2)
+
+summary(aggmod_6)
+
+AIC(aggmod_1, aggmod_2, aggmod_6)
+BIC(aggmod_1, aggmod_2, aggmod_6)
+
+coef(aggmod_6)$ID %>% tibble() %>% 
+  mutate(ID = unique(d_agg2$ID)) %>% 
+  dplyr::rename(intercept = `(Intercept)`,
+                b1 = p_global, 
+                b2 = p_conjunction,
+                b3 = `mb_utility:p_conditional`) %>% 
+  right_join(d_agg2 %>% select(!RT)) %>% 
+  mutate(RT = intercept + b1*p_global + b2*p_conjunction + b3*mb_utility*p_conditional) %>% 
+  ggplot(aes(p_conditional, RT)) + 
+    geom_quasirandom(aes(color = as.factor(ID)), data = d_agg2, alpha = .3, method = "pseudorandom", width = .04) +
+    geom_line(aes(color = as.factor(ID), group = as.factor(ID))) +
+    facet_wrap(~p_global, labeller = "label_both") +
+    theme_minimal() +
+    theme(legend.position = "none")
+  
 
 
 
 
+library(brms)
 
-
-
-
+brm(data = d_agg2, 
+    family = gaussian,
+    RT ~ 1 + p_global + p_conjunction + mb_utility:p_conditional + (1 + mb_utility:p_conditional | ID),
+    prior = c(prior(normal(-44.91, 20), coef = "p_global"),
+              prior(normal(-92.54, 20), coef = "p_conjunction"),
+              prior(normal(-113.34, 20), coef = "mb_utility:p_conditional"),
+              prior(lkj(2), class = cor)),
+    iter = 2000, warmup = 1000, chains = 4, cores = 4)
