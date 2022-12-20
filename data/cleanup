@@ -13,6 +13,9 @@ d1$condition[d1$cue == "A" & d1$target == "Y"] <- "AY"
 d1$condition[d1$cue == "B" & d1$target == "X"] <- "BX"
 d1$condition[d1$cue == "B" & d1$target == "Y"] <- "BY"
 
+d1$p_cue[d1$cue == "A"] <- .8
+d1$p_cue[d1$cue == "B"] <- .2
+
 d1$p_global[d1$target == "X"] <- .68
 d1$p_global[d1$target == "Y"] <- .32
 
@@ -33,7 +36,7 @@ d1 <- d1 %>%
   rename(ID = jatosStudyResultId,
          probe = target,
          RT = response_time) %>%
-  select(ID, condition, cue, probe, p_global, p_conditional, correct, RT, correct) %>%
+  select(ID, condition, cue, probe, p_cue, p_global, p_conditional, correct, RT, correct) %>%
   ungroup()
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -51,6 +54,10 @@ d2$condition[d2$cue == "A" & d2$target == "Y"] <- "AY"
 d2$condition[d2$cue == "B" & d2$target == "X"] <- "BX"
 d2$condition[d2$cue == "B" & d2$target == "Y"] <- "BY"
 d2$condition[d2$cue == "C"] <- "CX"
+
+d2$p_cue[d2$cue == "A"] <- .2
+d2$p_cue[d2$cue == "B"] <- .2
+d2$p_cue[d2$cue == "C"] <- .6
 
 d2$p_global[d2$target == "X"] <- .8
 d2$p_global[d2$target == "Y"] <- .2
@@ -73,7 +80,7 @@ d2 <- d2 %>%
   rename(ID = jatosStudyResultId,
          probe = target,
          RT = response_time) %>%
-  select(ID, condition, cue, probe, p_global, p_conditional, correct, RT) %>%
+  select(ID, condition, cue, probe, p_cue, p_global, p_conditional, correct, RT) %>%
   ungroup()
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -81,11 +88,60 @@ d2 <- d2 %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
 d <- d1 %>% add_row(d2) %>%
-  mutate(p_posterior = p_global * p_conditional,
-         best_guess = round(p_conditional))
+  mutate(best_guess = round(p_conditional))
 
-# Aggregated by participant/condition
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+# Aggregated by Participant/Condition
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+d1_agg <- d1 %>%
+  group_by(ID, condition, cue, probe, p_cue, p_global, p_conditional) %>%
+  summarise(RT = mean(RT, na.rm = T),
+            correct = mean(correct, na.rm = T)) %>%
+  mutate(p_conjunction = p_cue*p_conditional) %>%
+  mutate(best_guess = round(p_conditional),
+         mb_utility = abs(mean(c(p_global, p_conjunction)) - p_conditional),
+         mb_utility_globalonly = abs(p_global - p_conditional),
+         mb_utility_conjunctiononly = abs(p_conjunction - p_conditional),
+         mb_utility_max = abs(max(c(p_global, p_conjunction)) - p_conditional),
+         mb_utility_min = abs(max(c(p_global, p_conjunction)) - p_conditional))
+
+d2_agg <- d2 %>%
+  group_by(ID, condition, cue, probe, p_cue, p_global, p_conditional) %>%
+  summarise(RT = mean(RT, na.rm = T),
+            correct = mean(correct, na.rm = T)) %>%
+  mutate(p_conjunction = p_cue*p_conditional) %>%
+  mutate(best_guess = round(p_conditional),
+         mb_utility = abs(mean(c(p_global, p_conjunction)) - p_conditional),
+         mb_utility_globalonly = abs(p_global - p_conditional),
+         mb_utility_conjunctiononly = abs(p_conjunction - p_conditional),
+         mb_utility_max = abs(max(c(p_global, p_conjunction)) - p_conditional),
+         mb_utility_min = abs(max(c(p_global, p_conjunction)) - p_conditional))
+
 d_agg <- d %>%
-  group_by(ID, condition, cue, probe, p_global, p_conditional, p_posterior, best_guess) %>%
-  summarise(RT = mean(RT),
-            correct = mean(correct))
+  group_by(ID, condition, cue, probe, p_cue, p_global, p_conditional, best_guess) %>%
+  summarise(RT = mean(RT, na.rm = T),
+            correct = mean(correct, na.rm = T)) %>%
+  mutate(p_conjunction = p_cue*p_conditional,
+         mb_utility = abs(mean(c(p_global, p_conjunction)) - p_conditional),
+         mb_utility_globalonly = abs(p_global - p_conditional),
+         mb_utility_conjunctiononly = abs(p_conjunction - p_conditional),
+         mb_utility_max = abs(max(c(p_global, p_conjunction)) - p_conditional),
+         mb_utility_min = abs(max(c(p_global, p_conjunction)) - p_conditional))
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+# Aggregated TWICE by Participant/Condition (double the n)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+d_agg2 <- d %>%
+  mutate(cut = sample(1:2, nrow(.), replace = T)) %>% 
+  group_by(ID, cut, condition, cue, probe, p_cue, p_global, p_conditional, best_guess) %>%
+  summarise(RT = mean(RT, na.rm = T),
+            correct = mean(correct, na.rm = T)) %>%
+  mutate(p_conjunction = p_cue*p_conditional,
+         mb_utility = abs(mean(c(p_global, p_conjunction)) - p_conditional),
+         mb_utility_globalonly = abs(p_global - p_conditional),
+         mb_utility_conjunctiononly = abs(p_conjunction - p_conditional),
+         mb_utility_max = abs(max(c(p_global, p_conjunction)) - p_conditional),
+         mb_utility_min = abs(max(c(p_global, p_conjunction)) - p_conditional))
+
