@@ -57,255 +57,191 @@ In the absence of a clear direction to go from here, I'll start trying some mode
 
 ### Model Comparisons
 #### The Dataset
-The following models will be trained three times each: once on the data from experiment 1.1, once on the data from experiment 1.2, and once on a unified dataset. All datasets are aggregated by participant means within each condition.
+Each participant in the experiments underwent between three and four hundred trials. Since the models I'll be using here account for individual differences, I can train them with a split dataset: Trials are randomly distributed into one of two groups, and then averaged within participants/conditions. This effectively doubles the sample size.
+
+Also, raw probabiilties of outcomes (e.g. conditional probability of `A`→ `X` in Exp. 1.1 = .8) have been transformed into log-odds. This means we can't use data from the `C`→ `X` condition (logit function goes to infinity as p approaches 1), but it should allow us to assume homoskedasticity.
 
 ```r
-> d_agg
-# A tibble: 152 × 10
-# Groups:   ID, condition, cue, probe, p_cue, p_global, p_conditional [152]
-       ID condition cue   probe p_cue p_global p_conditional best_guess    RT correct
-    <int> <chr>     <chr> <chr> <dbl>    <dbl>         <dbl>      <dbl> <dbl>   <dbl>
- 1 166623 AX        A     X       0.8     0.68           0.8          1  358.       1
- 2 166623 AY        A     Y       0.8     0.32           0.2          0  401.       1
- 3 166623 BX        B     X       0.2     0.68           0.2          0  409.       1
- 4 166623 BY        B     Y       0.2     0.32           0.8          1  333.       1
- 5 166626 AX        A     X       0.8     0.68           0.8          1  493.       1
- 6 166626 AY        A     Y       0.8     0.32           0.2          0  536.       1
- 7 166626 BX        B     X       0.2     0.68           0.2          0  529.       1
- 8 166626 BY        B     Y       0.2     0.32           0.8          1  516.       1
- 9 166640 AX        A     X       0.8     0.68           0.8          1  460.       1
-10 166640 AY        A     Y       0.8     0.32           0.2          0  552        1
-# … with 142 more rows
+> d_agg2 %>% select(ID, experiment, condition, RT, odds_global, odds_conditional, odds_conjunction)
+# A tibble: 272 × 7
+       ID experiment   condition odds_global odds_conditional odds_conjunction    RT
+    <int> <chr>        <chr>           <dbl>            <dbl>            <dbl> <dbl>
+ 1 166623 Experiment 1 AX              0.754             1.39            0.575  357.
+ 2 166623 Experiment 1 AY             -0.754            -1.39           -1.66   400.
+ 3 166623 Experiment 1 BX              0.754            -1.39           -3.18   393 
+ 4 166623 Experiment 1 BY             -0.754             1.39           -1.66   324 
+ 5 166623 Experiment 1 AX              0.754             1.39            0.575  358.
+ 6 166623 Experiment 1 AY             -0.754            -1.39           -1.66   402.
+ 7 166623 Experiment 1 BX              0.754            -1.39           -3.18   414.
+ 8 166623 Experiment 1 BY             -0.754             1.39           -1.66   344.
+ 9 166626 Experiment 1 AX              0.754             1.39            0.575  504.
+10 166626 Experiment 1 AY             -0.754            -1.39           -1.66   538.
+# … with 262 more rows
 ```
-The initial hints at individual differences mean that multilevel modelling is appropriate here. But what should the parameters be?
+
+In this round, I'll be using Bayesian methodology since brms allows me more flexibility in defining systems of equations. This will be helpful for Model 6 and beyond.
 
 #### Model 0: Conditional Probability Only
 If participants fully understood the structure of the experiment, and behaved optimally, the resulting predictions would reflect cue-conditional probabilities. Thus if `A` appeared in experiment 1.1, the optimal prediction engine would evaluate the probability of `X` at .8 and of `Y` at .2. Likewise is `B` appeared, the engine would evaluate P(`X`|`B`) at .2 and P(`Y`|`B`) at .8. Thus reaction times would be equally short for the sequences `A`→ `X` and `B`→ `Y`, since P(`X`|`A`) = P(`Y`|`B`). Reaction times for `A`→ `Y` and `B`→ `X` would be longer, but likewise equal.
 
 ```r
-aggmod_0 <- lmer(RT ~ 1 + p_conditional + (1 + p_conditional | ID), d_agg)
+# Using nonlinear syntax for consistency with later models.
+aggmod_0_bayes <-
+  brm(data = d_agg2, 
+      family = gaussian,
+      bf(RT ~ i + m,
+         i ~ (1 | cor | ID),
+         m ~ 0 + odds_conditional + (0 + odds_conditional | cor | ID),
+         nl = TRUE),
+      prior = c(prior(normal(450, 100), coef = "Intercept", nlpar = i),
+                prior(normal(-12, 20), coef = "odds_conditional", nlpar = m)),
+      iter = 5000, warmup = 2000, chains = 4, cores = 4)
 ```
+
 ##### Results
 ```r
-Formula: RT ~ 1 + p_conditional + (1 + p_conditional | ID)
-   Data: d_agg
+> summary(aggmod_0_bayes)
+ Family: gaussian 
+  Links: mu = identity; sigma = identity 
+Formula: RT ~ i + m 
+         i ~ (1 | cor | ID)
+         m ~ 0 + odds_conditional + (0 + odds_conditional | cor | ID)
+   Data: d_agg2 (Number of observations: 272) 
+  Draws: 4 chains, each with iter = 5000; warmup = 2000; thin = 1;
+         total post-warmup draws = 12000
 
-Fixed effects:
-              Estimate Std. Error t value
-(Intercept)     498.40      11.26  44.273
-p_conditional   -99.83      14.29  -6.988
+Group-Level Effects: 
+~ID (Number of levels: 34) 
+                                    Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sd(i_Intercept)                        59.13      7.68    45.94    75.81 1.00     1844     3555
+sd(m_odds_conditional)                  6.34      2.98     0.69    12.35 1.00     2679     3074
+cor(i_Intercept,m_odds_conditional)     0.34      0.33    -0.39     0.91 1.00     8108     5475
 
-Correlation of Fixed Effects:
-            (Intr)
-p_conditinl -0.466
+Population-Level Effects: 
+                   Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+i_Intercept          453.90     10.48   432.32   474.11 1.01     1100     1977
+m_odds_conditional   -11.74      2.23   -16.06    -7.32 1.00     6600     7573
 
-Formula: RT ~ 1 + p_conditional + (1 + p_conditional | ID)
-   Data: d1_agg
-
-Fixed effects:
-              Estimate Std. Error t value
-(Intercept)     465.91      13.34  34.933
-p_conditional   -56.06      12.55  -4.469
-
-Correlation of Fixed Effects:
-            (Intr)
-p_conditinl -0.200
-
-Formula: RT ~ 1 + p_conditional + (1 + p_conditional | ID)
-   Data: d2_agg
-
-Fixed effects:
-              Estimate Std. Error t value
-(Intercept)     542.76      14.27  38.048
-p_conditional  -156.97      22.71  -6.913
-
-Correlation of Fixed Effects:
-            (Intr)
-p_conditinl -0.357
+Family Specific Parameters: 
+      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sigma    32.62      1.58    29.66    35.89 1.00     6357     7607
 ```
-Looking alright. The coefficient for the effect of p_conditional does vary drastically between the two experiments. Looking at the visual, it seems clear that this can be attributed to the `C` condition in Experiment 1.2.
-
-![aggmod_0](figures/aggmod_0.png)
-
-While the `C` condition in Experiment 1.2 has by far the lowest RTs, the other two conditions in that experiment seems hardly different. They also seem quite a bit higher than the model expects them to be. 
-
-Worst of all, a few of these groups look to be clustered. Especially the two Experiment 1 groups seem to be split along the y axis. Remember that `p_conditional` = 0.2 contains both `A`→ `Y` and `B`→ `X`, and `p_conditional` = 0.8 contains both `A`→ `X` and `B`→ `Y`.
+Looking alright. Let's move on though. It was obvious from the first look at the data this is not the right model (e.g. `A`→ `X` and `B`→ `Y` have the same conditional probabilities but differ significantly in RT).
 
 #### Model 1: Summed Parallel Predictions
 Maybe conditional probability is not the whole story. Context-clues in the real world often come at many levels of temporal and conceptual abstraction. Perhaps participants are generating one assessment of outcome probability based on the task as a whole (`p_global`) and another on the cues alone (`p_conditional`).
 
 ```r
-aggmod_1 <- lmer(RT ~ 1 + p_global + p_conditional + (1 + p_global + p_conditional | ID), d_agg)
-```
+aggmod_1_bayes <-
+  brm(data = d_agg2, 
+      family = gaussian,
+      bf(RT ~ i + m,
+         i ~ (1 | cor | ID),
+         m ~ 0 + odds_global + odds_conditional + (0 + odds_global + odds_conditional | cor | ID),
+         nl = TRUE),
+      prior = c(prior(normal(450, 100), coef = "Intercept", nlpar = i),
+                prior(normal(-3, 20), coef = "odds_global", nlpar = m),
+                prior(normal(-12, 20), coef = "odds_conditional", nlpar = m)),
+      iter = 5000, warmup = 2000, chains = 4, cores = 4)
+ ```
 
 ##### Results
 ```r
-Formula: 
-RT ~ 1 + p_global + p_conditional + (1 + p_global + p_conditional | ID)
-   Data: d_agg
+ Family: gaussian 
+  Links: mu = identity; sigma = identity 
+Formula: RT ~ i + m 
+         i ~ (1 | ID)
+         m ~ 0 + odds_global + odds_conditional + (0 + odds_global + odds_conditional | ID)
+   Data: d_agg2 (Number of observations: 272) 
+  Draws: 4 chains, each with iter = 5000; warmup = 2000; thin = 1;
+         total post-warmup draws = 12000
 
-Fixed effects:
-              Estimate Std. Error t value
-(Intercept)     515.37      12.73  40.488
-p_global        -38.39      13.51  -2.843
-p_conditional   -94.07      14.17  -6.639
+Group-Level Effects: 
+~ID (Number of levels: 34) 
+                                      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sd(i_Intercept)                          59.13      7.59    46.40    75.85 1.00     1884     3756
+sd(m_odds_global)                        18.87      3.21    13.46    25.90 1.00     3545     6627
+sd(m_odds_conditional)                    8.91      2.25     4.85    13.65 1.00     4096     6112
+cor(m_odds_global,m_odds_conditional)    -0.52      0.24    -0.93     0.01 1.00     4222     4851
 
-Correlation of Fixed Effects:
-            (Intr) p_glbl
-p_global    -0.508       
-p_conditinl -0.214 -0.290
+Population-Level Effects: 
+                   Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+i_Intercept          453.74     10.34   433.30   474.56 1.00     1153     2373
+m_odds_global         -4.84      3.48   -11.84     1.90 1.00     3371     6344
+m_odds_conditional   -12.32      2.14   -16.56    -8.00 1.00     7431     8408
 
-Formula: 
-RT ~ 1 + p_global + p_conditional + (1 + p_global + p_conditional | ID)
-   Data: d1_agg
-
-Fixed effects:
-              Estimate Std. Error t value
-(Intercept)     489.18      19.51  25.068
-p_global        -46.54      23.74  -1.960
-p_conditional   -56.06      12.13  -4.623
-
-Correlation of Fixed Effects:
-            (Intr) p_glbl
-p_global    -0.748       
-p_conditinl  0.245 -0.596
-
-Formula: 
-RT ~ 1 + p_global + p_conditional + (1 + p_global + p_conditional | ID)
-   Data: d2_agg
-
-Fixed effects:
-              Estimate Std. Error t value
-(Intercept)     550.30      15.61  35.251
-p_global        -22.72      16.94  -1.341
-p_conditional  -148.33      23.92  -6.201
-
-Correlation of Fixed Effects:
-            (Intr) p_glbl
-p_global    -0.422       
-p_conditinl -0.161 -0.339
+Family Specific Parameters: 
+      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sigma    25.34      1.41    22.76    28.25 1.00     6829     8664
 ```
-This model seems to add very little to the last one. `p_global` has a small effect, if any. `p_conditional` = 0.33 and `p_conditional` = 0.67 again look to have higher RTs than the model expects. Interestingly enough, the `p_conditional` = 0.67 in the high p_global group seems to be higher than `p_conditional` = 0.33! Remember than this is the `A`→ `X` condition in Experiment 1.2.
 
-![aggmod_1](figures/aggmod_1.png)
+![aggmod_1](figures/aggmod_1_bayes_fit.png)
+
+This model seems to fit the data fairly well, actually. In fact, it even seems to have picked up on the strange individual differences I discussed above (found especially in Exp. 1.2), with zigzags going both ways. This may be connected to the fact the model is estimating a *positive* effect of global odds for lots of the participants. This is strange and seems probably wrong - higher global frequencies cause some people to take *longer*!? I'll come back to this.
+
+Another interesting finding: the parameters for `odds_global` and `odds_conditional` are negatively correlated between participants. In other words, people who rely more on global odds show less sensitivity to conditional odds.
 
 #### Model 2: Summed Proportional Stimulus-Response Associations
 Perhaps prediction is not prediction at all but rather simply the sum of stimulus-response associations. This view produces a model similar to Model 1 but subtly different.
 Both experiments involve two sets of stimuli: prompts (`X` and `Y`) and cues (`A` and `B`). These four stimuli are linked to two responses, corresponding to the two prompts. 
 Associations between prompts and their corresponding responses are likely to be very strong, as participants were thoroughly drilled in the paradigm prior to the test phase. Nevertheless, these connections may be variably strenghtened in proportion to the number of times participants were exposed to each stimulus-response pair. This proportion of course is equal to the global probability of each prompt appearing within the paradigm, independent of cues (`p_global`). 
-Associations between cues and responses would likewise vary by frequency of exposure. Since different cues appear with different frequencies, and since the frequencies of each response are conditional on the cue, connections between cues and responses should be proportional to the product of cue probability (`p_cue`) and conditional probability (`p_conditional`). I'll call this value `p_posterior`.
+Associations between cues and responses would likewise vary by frequency of exposure. Since different cues appear with different frequencies, and since the frequencies of each response are conditional on the cue, connections between cues and responses should be proportional to the product of cue probability (`p_cue`) and conditional probability (`p_conditional`). I'll call this value `p_conjunction`.
 
 ```r
-d_agg <- d_agg %>% mutate(p_posterior = p_cue*p_conditional)
+d_agg2 <- d_agg2 %>% mutate(p_conjunction = p_cue*p_conditional)
+# odds_conjunction will then be log-odds of p_conjunction
 ```
 Model 2 can therefore be formulated as follows:
 
 ```r
-aggmod_2 <- lmer(RT ~ 1 + p_global + p_posterior + (1 + p_global + p_posterior | ID), d_agg)
+aggmod_2_bayes <-
+  brm(data = d_agg2, 
+      family = gaussian,
+      bf(RT ~ i + mf,
+         i ~ (1 | cor | ID),
+         mf ~ 0 + odds_global + odds_conjunction + (0 + odds_global + odds_conjunction | cor | ID),
+         nl = TRUE),
+      prior = c(prior(normal(450, 100), coef = "Intercept", nlpar = i),
+                prior(normal(-3, 20), coef = "odds_global", nlpar = mf),
+                prior(normal(-12, 20), coef = "odds_conjunction", nlpar = mf)),
+      iter = 5000, warmup = 2000, chains = 4, cores = 4)
 ```
 
 ##### Results
 ```r
-Formula: RT ~ 1 + p_global + p_posterior + (1 + p_global + p_posterior | ID)
-   Data: d_agg
+ Family: gaussian 
+  Links: mu = identity; sigma = identity 
+Formula: RT ~ i + mf 
+         i ~ (1 | ID)
+         mf ~ 0 + odds_global + odds_conjunction + (0 + odds_global + odds_conjunction | ID)
+   Data: d_agg2 (Number of observations: 272) 
+  Draws: 4 chains, each with iter = 5000; warmup = 2000; thin = 1;
+         total post-warmup draws = 12000
 
-Fixed effects:
-            Estimate Std. Error t value
-(Intercept)   476.91      13.14  36.290
-p_global      -14.82      14.43  -1.027
-p_posterior  -121.72      22.21  -5.481
+Group-Level Effects: 
+~ID (Number of levels: 34) 
+                                        Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sd(i_Intercept)                            58.26      7.81    44.99    75.82 1.00     2434     4772
+sd(mf_odds_global)                         16.76      3.29    11.00    23.83 1.00     4340     7073
+sd(mf_odds_conjunction)                     2.54      1.87     0.10     6.91 1.00     3014     4163
+cor(mf_odds_global,mf_odds_conjunction)    -0.29      0.52    -0.97     0.85 1.00     8026     8284
 
-Correlation of Fixed Effects:
-            (Intr) p_glbl
-p_global    -0.651       
-p_posterior  0.067 -0.361
+Population-Level Effects: 
+                    Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+i_Intercept           439.56     10.72   418.43   460.78 1.00     1636     3054
+mf_odds_global         -4.09      3.48   -11.06     2.62 1.00     4966     7298
+mf_odds_conjunction    -7.43      1.96   -11.38    -3.56 1.00    14127     8431
 
-Formula: RT ~ 1 + p_global + p_posterior + (1 + p_global + p_posterior | ID)
-   Data: d1_agg
-
-Fixed effects:
-            Estimate Std. Error t value
-(Intercept)   461.15      22.02  20.938
-p_global      -29.18      26.55  -1.099
-p_posterior   -34.73      18.48  -1.880
-
-Correlation of Fixed Effects:
-            (Intr) p_glbl
-p_global    -0.794       
-p_posterior  0.056 -0.376
-
-Formula: RT ~ 1 + p_global + p_posterior + (1 + p_global + p_posterior | ID)
-   Data: d2_agg
-
-Fixed effects:
-            Estimate Std. Error t value
-(Intercept)  494.188     16.516  29.921
-p_global      -2.612     17.523  -0.149
-p_posterior -220.721     32.618  -6.767
-
-Correlation of Fixed Effects:
-            (Intr) p_glbl
-p_global    -0.659       
-p_posterior  0.517 -0.463
+Family Specific Parameters: 
+      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sigma    30.88      1.60    27.94    34.20 1.00    10029     8816
 ```
 
-This model seems to have accentuated the differences between the two Experiments: `p_posterior` is an incredible predictor in Experiment 1.2, but underwhelming in Exp. 1.1. `p_global` is once again weak, though always in the right direction.
+![aggmod_2](figures/aggmod_2_bayes_fit.png)
 
-At this point, let's stop and do a few formal model comparisons.
-```r
-library(flexplot)
+Hard to tell the difference from the visual alone. 
 
-model.comparison(aggmod_0, aggmod_1)
-#>               aic      bic bayes.factor     p
-#> aggmod_0 1633.919 1652.063        5.761 0.046
-#> aggmod_1 1625.326 1655.565        0.174      
-
-model.comparison(aggmod_0, aggmod_2)
-#>               aic      bic bayes.factor
-#> aggmod_0 1633.919 1652.063        1.846
-#> aggmod_2 1623.050 1653.289        0.542
-
-model.comparison(aggmod_1, aggmod_2)
-#>               aic      bic bayes.factor
-#> aggmod_1 1625.326 1655.565        0.320
-#> aggmod_2 1623.050 1653.289        3.121
-
-
-model.comparison(aggmod_0.1, aggmod_1.1)
-#>                aic     bic bayes.factor      p
-#> aggmod_0.1 741.188 754.848        0.003 <2e-16
-#> aggmod_1.1 720.127 742.894      394.354   
-
-model.comparison(aggmod_0.1, aggmod_2.1)
-#>                aic     bic bayes.factor
-#> aggmod_0.1 741.188 754.848     2989.857
-#> aggmod_2.1 748.087 770.854        0.000
-
-model.comparison(aggmod_1.1, aggmod_2.1)
-#>                aic     bic bayes.factor
-#> aggmod_1.1 720.127 742.894      1179063
-#> aggmod_2.1 748.087 770.854            0
-
-
-model.comparison(aggmod_0.2, aggmod_1.2)
-#>                aic     bic bayes.factor     p
-#> aggmod_0.2 859.817 874.109       54.335 0.718
-#> aggmod_1.2 858.279 882.099        0.018      
-
-model.comparison(aggmod_0.2, aggmod_2.2)
-#>                aic     bic bayes.factor
-#> aggmod_0.2 859.817 874.109            0
-#> aggmod_2.2 819.678 843.498      4435544
-
-model.comparison(aggmod_1.2, aggmod_2.2)
-#>                aic     bic bayes.factor
-#> aggmod_1.2 858.279 882.099            0
-#> aggmod_2.2 819.678 843.498    241004557
-```
-
-Model 1 is best for Experiment 1.1, and Model 2 is best for Experiment 1.2. None of the models are particularly good overall.
-
-#### Model 3: LTM = Base Rate, WM = Conditional Best Guess
+#### Model 6: LTM = Base Rate, WM = Conditional Best Guess
 Maybe difference levels of conditionally-dependent prediction are driven by different memory systems? If conditional probability were handled by working memory, its representation might be binary: either the prediction is being held in WM or not. If this is the case, perhaps, we just pick the most likely outcome and hold that in mind at each step. 
 
 If long term memory holds only global probabilities, the model would then look like this:
@@ -486,26 +422,10 @@ aggmod_5
 
 Sure enough, the model has the effect of `p_global` varying quite a lot between participants. This is important, because it explains the correlation I observed early in this analysis - that participants who's times go up more from `A`→`X` to `A`→`Y` also go up more from `B`→`X` to `B`→`Y`. I'm less sure what, if anything, to do with individual differences in the size of the WM boost.
 
-Time for another round of formal model comparisons. flexplot's model.comparison can't deal with nonlinear mixed effects models, so I'll content myself with AIC and BIC. 
-
-###### AIC
-- Model 1 (df = 10): 1625.326
-- Model 2 (df = 10): 1623.05
-- Model 3 (df = 10): 1652.397
-- Model 4 (df = 9 ): 1612.108
-- Model 5 (df = 11): 1584.722
-
-###### BIC
-- Model 1 (df = 10): 1655.565
-- Model 2 (df = 10): 1653.289
-- Model 3 (df = 10): 1639.323
-- Model 4 (df = 9 ): 1639.323
-- Model 5 (df = 11): 1617.985
-
-Model 5 does look best for the full dataset! I do still have a couple concerns about this model, though:
-1. Putting the `p_conditional` = .8 group in the middle of the sigmoid curve is suspicious. The model wants to do this because the effect of `p_global` can't come close to explaining the difference in RT between the `A`→`X`/`B`→`Y` conditions of Experiment 1.1 and the `C`→`X` condition in Experiment 1.2.
-2. If the universal WM updating threshold were right around p_conditional = .8, I would expect the variance in RT at that point to be especially high relative to p_conditional = 1, at which everybody should be pre-updating all the time. In fact, we see the opposite. This is strange.
+#### Model 6: LTM = Summed Proportional Associations, WM = Resource-Optimal Model-Based Prediction
 
 
-#### P.S.
-I ran most of these models again using surprisal (negative log probability) of outcomes rather than probability. The fit was universally worse.
+
+
+
+
