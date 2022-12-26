@@ -251,6 +251,9 @@ sigma    30.88      1.60    27.94    34.20 1.00    10029     8816
 Hard to tell the difference from the visual alone. It does look to be missing a lot on the `B`→ `Y` condition in Experiment 1, though. It's missing some importance of conditional odds.
 
 #### Model 4: LTM = Summed Proportional Associations, WM = Conditional Load Threshold
+```diff
+! This section is now outdated. Skip to Model 6.
+```
 
 So far we've seen that conditional probability is a really strong predictor of the Experiment 1 results, while Experiment 2 results are much more closely tied to `p_posterior` (i.e. cue probability times cue-conditional probability). What could account for this difference between the two experiments?
 
@@ -274,6 +277,9 @@ For the sake of simplicity, I'm starting by letting only the Intercept and the t
 Placing the threshold in conditional probability is not as crazy as it may sound - late ERP positivity effects such as the P600 provide some evidence that the brain can incur additional neural consequences when it encounters words that violate highly constraining contexts, over and above those reflected by the N400 ([Kuperberg & Jaeger, 2016](https://www.tandfonline.com/doi/pdf/10.1080/23273798.2015.1102299?needAccess=true)).[Kuperberg (2007)](https://reader.elsevier.com/reader/sd/pii/S0006899306036821?token=DBAD6CA0B990F7C4A3F867A445220DF83A72944AE05923A161B970FEAF6E897559A6C8A2B35EF0427BE056A371F3850B&originRegion=eu-west-1&originCreation=20221123114908) goes so far as to propose two distinct streams in language processing: one purely lexical/associational and one that incorporates higher-level (e.g. syntactic) knowledge.
 
 #### Model 6: LTM = Summed Proportional Associations, WM = Resource-Optimal Model-Based Prediction
+The reinforcement learning literature commonly distinguishes between _model-free_ and _model-based_ analysis. Model-free analysis is analogous to the associational LTM system discussed above in Model 2. Model-based analysis is more effortful, presumably entailing working memory resources. On the other hand, it has the benefit of accounting for latent causal structure in the environment, rather than just stimulus-response associations. This means that the use of model-based processing to generate predictions entails a cost-benefit analysis -- people will tend to use model-based analysis only inasmuch as it is likely to aid them in prediction above and beyond the model-free system.
+
+Here I model this with an expected utility term, the absolute difference between model-free and model-based prediction, or `fabs(mf - mb)`. The effect of model-based prediction (i.e. conditional odds) is fully moderated by this expected utility.
 
 ```r
 aggmod_6_bayes <-
@@ -294,6 +300,44 @@ aggmod_6_bayes <-
 
 # To my knowledge, this model is not possible to specify using lme4.
 ```
+
+And here are the results:
+```r
+> summary(aggmod_6_bayes)
+ Family: gaussian 
+  Links: mu = identity; sigma = identity 
+Formula: RT ~ i + mf + b1 * (abs(mf - mb) * mb) 
+         i ~ (1 | ID)
+         mf ~ 0 + odds_global + odds_conjunction + (0 + odds_global + odds_conjunction | ID)
+         b1 ~ (1 | ID)
+         mb ~ 0 + odds_conditional
+   Data: d_agg2 (Number of observations: 272) 
+  Draws: 4 chains, each with iter = 5000; warmup = 2000; thin = 1;
+         total post-warmup draws = 12000
+
+Group-Level Effects: 
+~ID (Number of levels: 34) 
+                                        Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sd(i_Intercept)                            57.05      7.18    44.82    72.57 1.00     2441     4498
+sd(mf_odds_global)                         17.95      3.09    12.63    24.69 1.00     3547     5895
+sd(mf_odds_conjunction)                     3.71      1.24     1.85     6.63 1.00     3189     5669
+sd(b1_Intercept)                            0.83      0.22     0.48     1.35 1.00     4177     6885
+cor(mf_odds_global,mf_odds_conjunction)     0.82      0.17     0.37     1.00 1.00     2575     5891
+
+Population-Level Effects: 
+                    Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+i_Intercept           453.53     10.41   433.17   473.64 1.00     1152     2428
+mf_odds_global         -2.66      3.41    -9.36     3.98 1.00     2633     4817
+mf_odds_conjunction    -0.14      1.20    -2.40     2.50 1.00     2072     3986
+b1_Intercept           -1.05      0.25    -1.58    -0.61 1.00     5713     6627
+mb_odds_conditional     1.00      0.00     1.00     1.00   NA       NA       NA
+
+Family Specific Parameters: 
+      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sigma    23.96      1.37    21.47    26.81 1.00     4482     7363
+```
+
+![aggmod_6](figures/aggmod_6_bayes_fit.png)
 
 
 ```r
