@@ -281,6 +281,8 @@ The reinforcement learning literature commonly distinguishes between _model-free
 
 Here I model this with an expected utility term, the absolute difference between model-free and model-based prediction, or `fabs(mf - mb)`. The effect of model-based prediction (i.e. conditional odds) is fully moderated by this expected utility.
 
+I'm telling the model to estimate correlations between all the random variables, and inputting fairly skeptical priors based roughly on a simple linear version of the same model.
+
 ```r
 aggmod_6_bayes <-
   brm(data = d_agg2, 
@@ -292,8 +294,8 @@ aggmod_6_bayes <-
        mb ~ 0 + odds_conditional,
        nl = TRUE),
     prior = c(prior(normal(450, 100), coef = "Intercept", nlpar = i),
-              prior(normal(-4, 20), coef = "odds_global", nlpar = mf),
-              prior(normal(-7, 20), coef = "odds_conjunction", nlpar = mf),
+              prior(normal(-5, 20), coef = "odds_global", nlpar = mf),
+              prior(normal(-5, 20), coef = "odds_conjunction", nlpar = mf),
               prior(normal(-10, 20), coef = "Intercept", nlpar = b1),
               prior(constant(1), coef = "odds_conditional", nlpar = mb)),
     iter = 5000, warmup = 2000, chains = 4, cores = 4)
@@ -306,10 +308,10 @@ And here are the results:
 > summary(aggmod_6_bayes)
  Family: gaussian 
   Links: mu = identity; sigma = identity 
-Formula: RT ~ i + mf + b1 * (abs(mf - mb) * mb) 
-         i ~ (1 | ID)
-         mf ~ 0 + odds_global + odds_conjunction + (0 + odds_global + odds_conjunction | ID)
-         b1 ~ (1 | ID)
+Formula: RT ~ i + mf + b1 * (fabs(mf - mb) * mb) 
+         i ~ (1 | cor | ID)
+         mf ~ 0 + odds_global + odds_conjunction + (0 + odds_global + odds_conjunction | cor | ID)
+         b1 ~ (1 | cor | ID)
          mb ~ 0 + odds_conditional
    Data: d_agg2 (Number of observations: 272) 
   Draws: 4 chains, each with iter = 5000; warmup = 2000; thin = 1;
@@ -318,23 +320,28 @@ Formula: RT ~ i + mf + b1 * (abs(mf - mb) * mb)
 Group-Level Effects: 
 ~ID (Number of levels: 34) 
                                         Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-sd(i_Intercept)                            57.05      7.18    44.82    72.57 1.00     2441     4498
-sd(mf_odds_global)                         17.95      3.09    12.63    24.69 1.00     3547     5895
-sd(mf_odds_conjunction)                     3.71      1.24     1.85     6.63 1.00     3189     5669
-sd(b1_Intercept)                            0.83      0.22     0.48     1.35 1.00     4177     6885
-cor(mf_odds_global,mf_odds_conjunction)     0.82      0.17     0.37     1.00 1.00     2575     5891
+sd(i_Intercept)                            58.80      7.97    45.05    76.84 1.00     1651     2928
+sd(mf_odds_global)                         18.38      2.97    13.22    24.90 1.00     3039     5391
+sd(mf_odds_conjunction)                     3.77      1.16     1.94     6.47 1.00     3202     4807
+sd(b1_Intercept)                            0.70      0.21     0.38     1.18 1.00     3045     5363
+cor(i_Intercept,mf_odds_global)            -0.19      0.17    -0.50     0.16 1.00     2492     4457
+cor(i_Intercept,mf_odds_conjunction)       -0.19      0.28    -0.70     0.39 1.00     3054     5538
+cor(mf_odds_global,mf_odds_conjunction)     0.72      0.19     0.27     0.97 1.00     3393     5896
+cor(i_Intercept,b1_Intercept)               0.20      0.26    -0.31     0.68 1.00     5770     6700
+cor(mf_odds_global,b1_Intercept)           -0.48      0.20    -0.83    -0.07 1.00     3865     4750
+cor(mf_odds_conjunction,b1_Intercept)      -0.23      0.30    -0.78     0.37 1.00     2037     3806
 
 Population-Level Effects: 
                     Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-i_Intercept           453.53     10.41   433.17   473.64 1.00     1152     2428
-mf_odds_global         -2.66      3.41    -9.36     3.98 1.00     2633     4817
-mf_odds_conjunction    -0.14      1.20    -2.40     2.50 1.00     2072     3986
-b1_Intercept           -1.05      0.25    -1.58    -0.61 1.00     5713     6627
+i_Intercept           453.85     10.11   433.65   473.54 1.00      829     1827
+mf_odds_global         -3.93      3.47   -10.98     2.83 1.00     1742     3215
+mf_odds_conjunction     0.14      1.28    -2.27     2.82 1.00     1980     4796
+b1_Intercept           -1.05      0.22    -1.54    -0.66 1.00     4820     6084
 mb_odds_conditional     1.00      0.00     1.00     1.00   NA       NA       NA
 
 Family Specific Parameters: 
       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-sigma    23.96      1.37    21.47    26.81 1.00     4482     7363
+sigma    22.90      1.33    20.46    25.65 1.00     3662     7614
 ```
 
 ![aggmod_6](figures/aggmod_6_bayes_fit.png)
