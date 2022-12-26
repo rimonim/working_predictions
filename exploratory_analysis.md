@@ -303,7 +303,23 @@ aggmod_6_bayes <-
 # To my knowledge, this model is not possible to specify using lme4.
 ```
 
-And here are the results:
+![aggmod_6](figures/aggmod_6_bayes_fit.png)
+
+Before I dive into the parameters of the model, I'll provide some justification for my use of such a complex model.
+Here are some Bayesian model comparisons based on leave-one-out cross-validation:
+
+```r
+> loo_compare(aggmod_0_bayes, aggmod_1_bayes, aggmod_2_bayes, aggmod_6_bayes, criterion = "loo")
+                           elpd_diff se_diff
+aggmod_6_bayes               0.0       0.0  
+aggmod_1_bayes             -23.7      18.8  
+aggmod_2_bayes             -64.2      19.1  
+aggmod_0_bayes             -69.7      19.6  
+```
+
+Model 6 seems to be the best model so far, though Model 1 isn't far behind. 
+
+Here are the results:
 ```r
 > summary(aggmod_6_bayes)
  Family: gaussian 
@@ -344,8 +360,13 @@ Family Specific Parameters:
 sigma    22.90      1.33    20.46    25.65 1.00     3662     7614
 ```
 
-![aggmod_6](figures/aggmod_6_bayes_fit.png)
+A few things that make sense about these results:
+- The two component effects of model-free prediction are highly correlated with each other. 
+- The Intercept is negatively correlated with the components of model-free prediction, and positively correlated with the effect of model-based prediction. 
+- The two component effects of model-free prediction are stongly negatively correlated with the effect of model-based prediction. 
 
+One thing that doesn't make sense about these results:
+- The estimated global effect of `odds_conjunction` is slightly _positive_. In fact, the group-level standard deviations of both model-free effects are so large that the model estimates large positive effects for a sizable proportion of the participants. The idea that model-free predictions -- which supposedly require minimal processing time -- would have _positive_ influences on reaction times is incomprehensible to me. 
 
 ```r
 aggmod_6_bayes_constrained <-
