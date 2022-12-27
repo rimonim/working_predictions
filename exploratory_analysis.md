@@ -319,7 +319,7 @@ aggmod_0_bayes             -69.7      19.6
 
 Model 6 seems to be the best model so far, though Model 1 isn't far behind. 
 
-Here are the results:
+Here are the parameter estimates:
 ```r
 > summary(aggmod_6_bayes)
  Family: gaussian 
@@ -361,12 +361,16 @@ sigma    22.90      1.33    20.46    25.65 1.00     3662     7614
 ```
 
 A few things that make sense about these results:
-- The two component effects of model-free prediction are highly correlated with each other. 
-- The Intercept is negatively correlated with the components of model-free prediction, and positively correlated with the effect of model-based prediction. 
-- The two component effects of model-free prediction are stongly negatively correlated with the effect of model-based prediction. 
+- The two component effects of model-free prediction are highly correlated with each other. This supports their theoretical grouping as a semi-independent system.
+- The two component effects of model-free prediction are stongly negatively correlated with the effect of model-based prediction. In other words, people who use more model-based prediction use less model-free prediction. Given that model-based prediction is more accurate, this looks to be optimal behavior.
+- The Intercept is negatively correlated with the components of model-free prediction, and positively correlated with the effect of model-based prediction. In other words, participants who use more model-based prediction have quicker responses in general. This is in line with the general intuition that model-based systems are better, or are correlated with intelligence and all sorts of good stuff like that (very scientific formulation, I know).
 
 One thing that doesn't make sense about these results:
 - The estimated global effect of `odds_conjunction` is slightly _positive_. In fact, the group-level standard deviations of both model-free effects are so large that the model estimates large positive effects for a sizable proportion of the participants. The idea that model-free predictions -- which supposedly require minimal processing time -- would have _positive_ influences on reaction times is incomprehensible to me. 
+
+To follow up on this non-sensical result, I'll retrain Model 6, this time constraining the model-free beta parameters to be negative. I'm not constraining the effect of model-based predictions, since those predictions theoretically take longer to compute and therefore may increase RTs if applied in the trials being measured (rather than just to train the model-free in the training period).
+
+The constrained model looks like this:
 
 ```r
 aggmod_6_bayes_constrained <-
@@ -383,5 +387,58 @@ aggmod_6_bayes_constrained <-
                 prior(normal(-10, 20), coef = "Intercept", nlpar = b1),
                 prior(constant(1), coef = "odds_conditional", nlpar = mb)),
       iter = 5000, warmup = 2000, chains = 4, cores = 4)
+```
+
+and here are the parameter estimates:
+
+```r
+> summary(aggmod_6_bayes_constrained)
+ Family: gaussian 
+  Links: mu = identity; sigma = identity 
+Formula: RT ~ i - mf + b1 * (fabs(mf - mb) * mb) 
+         i ~ (1 | cor | ID)
+         mf ~ 0 + odds_global + odds_conjunction + (0 + odds_global + odds_conjunction | cor | ID)
+         b1 ~ (1 | cor | ID)
+         mb ~ 0 + odds_conditional
+   Data: d_agg2 (Number of observations: 272) 
+  Draws: 4 chains, each with iter = 5000; warmup = 2000; thin = 1;
+         total post-warmup draws = 12000
+
+Group-Level Effects: 
+~ID (Number of levels: 34) 
+                                        Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sd(i_Intercept)                            58.98      8.20    45.22    77.30 1.00     2095     3101
+sd(mf_odds_global)                         19.39      3.17    13.85    26.39 1.01     3001     5972
+sd(mf_odds_conjunction)                     3.78      1.28     1.64     6.65 1.02      173     2092
+sd(b1_Intercept)                            0.66      0.19     0.37     1.11 1.00     3100     5416
+cor(i_Intercept,mf_odds_global)             0.20      0.18    -0.17     0.53 1.01     2119     3981
+cor(i_Intercept,mf_odds_conjunction)        0.17      0.30    -0.42     0.73 1.01      616     4352
+cor(mf_odds_global,mf_odds_conjunction)     0.70      0.19     0.24     0.96 1.00     4853     5775
+cor(i_Intercept,b1_Intercept)               0.20      0.26    -0.32     0.66 1.01      390     7903
+cor(mf_odds_global,b1_Intercept)            0.50      0.22     0.05     0.90 1.07       34      191
+cor(mf_odds_conjunction,b1_Intercept)       0.26      0.33    -0.39     0.85 1.14       19      140
+
+Population-Level Effects: 
+                    Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+i_Intercept           453.52     10.69   432.29   474.92 1.00      920     1984
+mf_odds_global         -2.24      1.84    -6.89    -0.07 1.00     5369     5953
+mf_odds_conjunction    -1.53      1.08    -4.06    -0.08 1.02      198     4406
+b1_Intercept           -1.07      0.19    -1.48    -0.71 1.01     4971     7087
+mb_odds_conditional     1.00      0.00     1.00     1.00   NA       NA       NA
+
+Family Specific Parameters: 
+      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sigma    23.90      1.39    21.33    26.78 1.01     1050     6552
+```
+
+Apart from the correlation between the two components of model-free prediction, the aformentioned sensical patterns have now gone away. Happily, this version of the model is still marginally better than any of the previous ones.
+
+```r
+                           elpd_diff se_diff
+aggmod_6_bayes               0.0       0.0  
+aggmod_6_bayes_constrained -17.4      19.6  
+aggmod_1_bayes             -23.7      18.8  
+aggmod_2_bayes             -64.2      19.1  
+aggmod_0_bayes             -69.7      19.6  
 ```
 
