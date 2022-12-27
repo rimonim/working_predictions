@@ -431,14 +431,23 @@ Family Specific Parameters:
 sigma    23.90      1.39    21.33    26.78 1.01     1050     6552
 ```
 
-Apart from the correlation between the two components of model-free prediction, the aformentioned sensical patterns have now gone away. Happily, this version of the model is still marginally better than any of the previous ones.
+Apart from the correlation between the two components of model-free prediction, the aformentioned sensical patterns have now gone away. 
+Sadly, elpd_diff says this version of the model is slightly worse than a similarly constrained version of Model 1:
 
 ```r
                            elpd_diff se_diff
 aggmod_6_bayes               0.0       0.0  
+aggmod_1_bayes_constrained -13.5       6.4  
 aggmod_6_bayes_constrained -17.4      19.6  
 aggmod_1_bayes             -23.7      18.8  
 aggmod_2_bayes             -64.2      19.1  
 aggmod_0_bayes             -69.7      19.6  
 ```
+
+Nevertheless, I'm curious to know how the various parameters are effecting the pattern of results. The following graphs split up the participants by their parameter estimates for model-free (i.e. odds_global + odds_conjunction) and model-based effects in the constrained Model 6.
+
+![aggmod_6 investigation](figures/aggmod_6_bayes_investigation1.png)
+
+![aggmod_6 investigation](figures/aggmod_6_bayes_investigation2.png)
+
 
